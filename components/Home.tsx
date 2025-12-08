@@ -3,7 +3,7 @@ import { Course } from '../types';
 import { 
     LogOut, Bell, Calendar, MapPin, Mail, Phone, 
     CheckSquare, Receipt, ClipboardList, CalendarDays, 
-    Cake, Bus, ChevronRight, UserCheck 
+    Cake, Bus, ChevronRight, UserCheck, Star, BookOpen
 } from 'lucide-react';
 import { BusTracker } from './BusTracker';
 import { FeePayment } from './FeePayment';
@@ -35,185 +35,192 @@ export const Home: React.FC<HomeProps> = ({ courses, onSelectCourse, onLogout })
     }) => (
         <button 
             onClick={onClick}
-            className={`aspect-square rounded-[24px] p-4 flex flex-col justify-between items-start text-left transition-transform active:scale-95 ${colorClass}`}
+            className={`aspect-square rounded-[24px] p-4 flex flex-col justify-between items-start text-left transition-transform active:scale-95 ${colorClass} relative overflow-hidden group`}
         >
-            <div className="w-full flex justify-between items-start">
+            <div className="absolute right-0 top-0 w-16 h-16 bg-white opacity-20 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            
+            <div className="w-full flex justify-between items-start relative z-10">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-white/60 backdrop-blur-md shadow-sm ${iconColorClass}`}>
                     <Icon size={20} strokeWidth={2.5} />
                 </div>
                 {badge && (
-                    <span className="w-6 h-6 bg-amber-400 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-sm">
+                    <span className="w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-sm border border-white">
                         {badge}
                     </span>
                 )}
             </div>
-            <span className="font-semibold text-slate-700 leading-tight mt-2 text-[15px]">
+            <span className="font-semibold text-slate-700 leading-tight mt-2 text-[13px] sm:text-[15px] relative z-10">
                 {label}
             </span>
         </button>
     );
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="min-h-screen bg-[#F8F9FA] flex flex-col font-sans">
             {/* Sticky Header */}
-            <div className="bg-white px-6 py-4 flex justify-between items-center sticky top-0 z-30 shadow-[0_2px_15px_-10px_rgba(0,0,0,0.05)]">
-                <h1 className="text-xl font-bold text-sky-500 tracking-tight">
-                    Smart Pathshala
-                </h1>
+            <div className="bg-white/90 backdrop-blur-xl px-6 py-4 flex justify-between items-center sticky top-0 z-30 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-[#5D8BF4] to-[#0EA5E9] rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                        O<span className="text-sky-200">5</span>
+                    </div>
+                    <h1 className="text-lg font-bold text-slate-800 tracking-tight">
+                        Smart Pathshala
+                    </h1>
+                </div>
                 <div className="flex items-center gap-3">
-                    <button className="p-2 bg-sky-50 rounded-full text-sky-500 hover:bg-sky-100 transition-colors">
-                        <Bell size={20} />
-                    </button>
-                     <button className="p-2 bg-sky-50 rounded-full text-sky-500 hover:bg-sky-100 transition-colors">
-                        <Calendar size={20} />
-                    </button>
-                     <button onClick={onLogout} className="p-2 bg-slate-50 rounded-full text-slate-400 hover:bg-slate-100 transition-colors">
+                     <button onClick={onLogout} className="p-2 bg-slate-50 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
                         <LogOut size={20} />
                     </button>
                 </div>
             </div>
 
-            <div className="p-6 space-y-6 flex-1 overflow-y-auto pb-20 no-scrollbar">
+            <div className="p-6 space-y-8 flex-1 overflow-y-auto pb-32 no-scrollbar">
                 
                 {/* School Profile Card */}
-                <div className="w-full bg-gradient-to-br from-[#0EA5E9] to-[#3B82F6] rounded-[32px] p-6 text-white shadow-xl shadow-sky-200/50 relative overflow-hidden">
+                <div className="w-full bg-gradient-to-br from-[#5D8BF4] to-[#0EA5E9] rounded-[32px] p-6 text-white shadow-xl shadow-blue-200/50 relative overflow-hidden group">
                      {/* Background shapes */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full translate-x-10 -translate-y-10"></div>
-                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full -translate-x-5 translate-y-5"></div>
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl transform translate-x-10 -translate-y-10 group-hover:scale-110 transition-transform duration-700"></div>
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500 opacity-20 rounded-full blur-2xl transform -translate-x-5 translate-y-5"></div>
 
                     <div className="relative z-10">
                         <div className="flex items-start gap-4 mb-6">
-                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md p-1 shrink-0">
-                                <div className="w-full h-full rounded-full bg-sky-50 flex items-center justify-center text-sky-600 font-bold text-2xl border border-sky-100">
-                                    <img 
-                                        src="https://api.dicebear.com/7.x/initials/svg?seed=FI&backgroundColor=e0f2fe&textColor=0ea5e9" 
-                                        alt="Logo" 
-                                        className="w-full h-full rounded-full"
-                                    />
-                                </div>
+                            <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg p-1 shrink-0 rotate-3 group-hover:rotate-6 transition-transform">
+                                <img 
+                                    src="https://api.dicebear.com/7.x/initials/svg?seed=FI&backgroundColor=e0f2fe&textColor=0ea5e9" 
+                                    alt="Logo" 
+                                    className="w-full h-full rounded-xl"
+                                />
                             </div>
                             <div>
-                                <h2 className="text-lg font-bold leading-tight mb-1">FULKURI ISLAMIC <br/> ACADEMY <span className="text-sky-100 text-xs font-normal opacity-80">(Estd: 1982)</span></h2>
-                                <span className="inline-block mt-1 bg-white/20 px-2.5 py-0.5 rounded-md text-[10px] font-medium backdrop-blur-md border border-white/10">Student Portal</span>
+                                <h2 className="text-lg font-bold leading-tight mb-1">FULKURI ISLAMIC <br/> ACADEMY</h2>
+                                <span className="inline-flex items-center gap-1 bg-white/20 px-2.5 py-0.5 rounded-lg text-[10px] font-medium backdrop-blur-md border border-white/10">
+                                    <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+                                    Student Portal • Estd: 1982
+                                </span>
                             </div>
                         </div>
 
-                        <div className="h-px bg-white/20 mb-4"></div>
-
-                        <div className="space-y-2.5 text-sm font-medium text-sky-50">
+                        <div className="grid grid-cols-1 gap-2.5 text-xs font-medium text-blue-50 bg-black/5 p-4 rounded-2xl border border-white/5">
                             <div className="flex items-center gap-3">
-                                <MapPin size={16} className="text-white shrink-0" />
+                                <MapPin size={14} className="text-white shrink-0" />
                                 <span>Chapainawabganj-6300</span>
                             </div>
                              <div className="flex items-center gap-3">
-                                <Mail size={16} className="text-white shrink-0" />
+                                <Mail size={14} className="text-white shrink-0" />
                                 <span>Schoolfulkuri@gmail.com</span>
                             </div>
                              <div className="flex items-center gap-3">
-                                <Phone size={16} className="text-white shrink-0" />
+                                <Phone size={14} className="text-white shrink-0" />
                                 <span>01309124497</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Dashboard Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                    <MenuItem 
-                        label="Student Attendance" 
-                        icon={CheckSquare} 
-                        colorClass="bg-[#E0F2F1]" 
-                        iconColorClass="text-[#00897B]" 
-                        onClick={() => {}} 
-                    />
-                    <MenuItem 
-                        label="Teachers Attendance" 
-                        icon={UserCheck} 
-                        colorClass="bg-[#FFF3E0]" 
-                        iconColorClass="text-[#FB8C00]" 
-                        onClick={() => {}} 
-                    />
-                    <MenuItem 
-                        label="Accounts" 
-                        icon={Receipt} 
-                        colorClass="bg-[#E3F2FD]" 
-                        iconColorClass="text-[#1E88E5]" 
-                        onClick={() => setIsFeePaymentOpen(true)}
-                        badge={1}
-                    />
-                     <MenuItem 
-                        label="Exam Results" 
-                        icon={ClipboardList} 
-                        colorClass="bg-[#F3E5F5]" 
-                        iconColorClass="text-[#8E24AA]" 
-                        onClick={() => {}} 
-                    />
-                     <MenuItem 
-                        label="Leave Management" 
-                        icon={CalendarDays} 
-                        colorClass="bg-[#FFEBEE]" 
-                        iconColorClass="text-[#E53935]" 
-                        onClick={() => {}} 
-                    />
-                     <MenuItem 
-                        label="Notification" 
-                        icon={Bell} 
-                        colorClass="bg-[#FFFDE7]" 
-                        iconColorClass="text-[#FBC02D]" 
-                        onClick={() => {}} 
-                    />
-                     <MenuItem 
-                        label="Event" 
-                        icon={Cake} 
-                        colorClass="bg-[#E1F5FE]" 
-                        iconColorClass="text-[#039BE5]" 
-                        onClick={() => {}} 
-                    />
-                     <MenuItem 
-                        label="Transport" 
-                        icon={Bus} 
-                        colorClass="bg-[#EDE7F6]" 
-                        iconColorClass="text-[#5E35B1]" 
-                        onClick={() => setIsBusTrackerOpen(true)} 
-                    />
-                </div>
-                
-                {/* Courses List - Functionally accessible below grid */}
-                <div className="pt-2">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-bold text-slate-800 text-lg">My Subjects</h3>
-                         <button className="text-xs font-bold text-sky-500 hover:text-sky-600 transition-colors">See All</button>
+                {/* Dashboard Menu Grid */}
+                <div>
+                    <h3 className="text-slate-800 font-bold text-lg mb-4 px-1">Quick Actions</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <MenuItem 
+                            label="Attendance" 
+                            icon={CheckSquare} 
+                            colorClass="bg-[#E0F2F1] hover:bg-[#B2DFDB]" 
+                            iconColorClass="text-[#00897B]" 
+                            onClick={() => {}} 
+                        />
+                         <MenuItem 
+                            label="Accounts" 
+                            icon={Receipt} 
+                            colorClass="bg-[#E3F2FD] hover:bg-[#BBDEFB]" 
+                            iconColorClass="text-[#1E88E5]" 
+                            onClick={() => setIsFeePaymentOpen(true)}
+                            badge={1}
+                        />
+                         <MenuItem 
+                            label="Bus Track" 
+                            icon={Bus} 
+                            colorClass="bg-[#FFF3E0] hover:bg-[#FFE0B2]" 
+                            iconColorClass="text-[#FB8C00]" 
+                            onClick={() => setIsBusTrackerOpen(true)}
+                        />
+                         <MenuItem 
+                            label="Results" 
+                            icon={ClipboardList} 
+                            colorClass="bg-[#F3E5F5] hover:bg-[#E1BEE7]" 
+                            iconColorClass="text-[#8E24AA]" 
+                            onClick={() => {}} 
+                        />
                     </div>
-                    <div className="space-y-3">
-                        {courses.map(course => (
-                            <button 
+                </div>
+
+                {/* Courses Section - Refactored Design */}
+                <div>
+                    <div className="flex justify-between items-center mb-4 px-1">
+                        <h3 className="text-slate-800 font-bold text-lg">My Courses</h3>
+                        <button className="text-xs font-bold text-[#5D8BF4] bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 transition-colors">
+                            View All
+                        </button>
+                    </div>
+
+                    <div className="space-y-4">
+                        {courses.map((course) => (
+                            <button
                                 key={course.id}
                                 onClick={() => onSelectCourse(course)}
-                                className="w-full bg-white p-4 rounded-[24px] shadow-sm border border-slate-100 flex items-center justify-between group active:scale-[0.98] transition-transform"
+                                className="w-full bg-white p-1 rounded-[28px] shadow-sm border border-slate-100 hover:shadow-md transition-all active:scale-[0.99] group text-left relative overflow-hidden"
                             >
-                                <div className="flex items-center gap-4">
-                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl bg-slate-50 shadow-inner group-hover:scale-110 transition-transform`}>
-                                        {course.icon}
+                                <div className="p-4 relative z-10 flex flex-col gap-4">
+                                    <div className="flex justify-between items-start">
+                                        <div className={`w-14 h-14 rounded-[20px] bg-gradient-to-br ${course.colorFrom} ${course.colorTo} flex items-center justify-center text-3xl text-white shadow-md group-hover:rotate-6 transition-transform duration-300 ring-4 ring-white`}>
+                                            {course.icon}
+                                        </div>
+                                        <div className="flex flex-col items-end">
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-2xl font-bold text-slate-800 tracking-tight">${course.price}</span>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase">/mo</span>
+                                            </div>
+                                            <div className="flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100 mt-1">
+                                                <Star size={10} className="fill-amber-400 text-amber-400" />
+                                                <span className="text-[10px] font-bold text-amber-700">{course.rating}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="text-left">
-                                        <h4 className="font-bold text-slate-800">{course.title}</h4>
-                                        <p className="text-xs text-slate-400 font-medium">Class 10-B</p>
+                                    
+                                    <div>
+                                        <h4 className="text-lg font-bold text-slate-800 mb-1 group-hover:text-[#5D8BF4] transition-colors">{course.title}</h4>
+                                        <p className="text-xs text-slate-500 font-medium line-clamp-2 leading-relaxed opacity-80">
+                                            {course.description}
+                                        </p>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-2">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex -space-x-2">
+                                                {[1,2,3].map(i => (
+                                                    <div key={i} className={`w-6 h-6 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[8px] font-bold text-slate-500`}>
+                                                        {String.fromCharCode(64 + i)}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <span className="text-[10px] font-bold text-slate-400">{course.reviews}+ Students</span>
+                                        </div>
+                                        
+                                        <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-[#5D8BF4] group-hover:text-white transition-all">
+                                            <ChevronRight size={18} />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-sky-50 group-hover:text-sky-500 transition-colors">
-                                    <ChevronRight size={18} />
-                                </div>
+                                
+                                {/* Decorative Gradient Blob */}
+                                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${course.colorFrom} ${course.colorTo} opacity-[0.03] group-hover:opacity-[0.08] rounded-bl-full transition-opacity pointer-events-none`}></div>
                             </button>
                         ))}
                     </div>
                 </div>
-
             </div>
 
-             {/* Bus Tracker Modal */}
+            {/* Modals */}
             <BusTracker isOpen={isBusTrackerOpen} onClose={() => setIsBusTrackerOpen(false)} />
-            
-            {/* Fee Payment Modal */}
             <FeePayment isOpen={isFeePaymentOpen} onClose={() => setIsFeePaymentOpen(false)} />
         </div>
     );
