@@ -21,7 +21,7 @@ export const Home: React.FC<HomeProps> = ({ courses, onSelectCourse, onLogout })
     const MenuItem = ({ icon: Icon, label, color, onClick, badge }: any) => (
         <button 
             onClick={onClick}
-            className={`flex flex-col items-center gap-2 p-3 rounded-2xl active:scale-95 transition-all hover:bg-slate-50 border border-transparent hover:border-slate-100 group`}
+            className={`flex flex-col items-center gap-2 p-2 rounded-2xl active:scale-95 transition-all hover:bg-slate-50 border border-transparent hover:border-slate-100 group min-w-[72px]`}
         >
             <div className={`w-14 h-14 rounded-2xl ${color} flex items-center justify-center text-white shadow-md group-hover:shadow-lg transition-shadow relative`}>
                 <Icon size={24} />
@@ -31,7 +31,7 @@ export const Home: React.FC<HomeProps> = ({ courses, onSelectCourse, onLogout })
                     </span>
                 )}
             </div>
-            <span className="text-xs font-semibold text-slate-600 text-center leading-tight max-w-[60px]">
+            <span className="text-xs font-semibold text-slate-600 text-center leading-tight max-w-[70px]">
                 {label}
             </span>
         </button>
@@ -40,7 +40,7 @@ export const Home: React.FC<HomeProps> = ({ courses, onSelectCourse, onLogout })
     return (
         <div className="h-full flex flex-col bg-slate-50 overflow-hidden">
             {/* Header */}
-            <div className="bg-white px-6 py-4 flex justify-between items-center sticky top-0 z-20 shadow-sm border-b border-slate-100">
+            <div className="bg-white px-6 py-4 flex justify-between items-center sticky top-0 z-20 shadow-sm border-b border-slate-100 shrink-0">
                 <div className="flex items-center gap-2.5">
                     <div className="w-9 h-9 bg-gradient-to-tr from-indigo-600 to-indigo-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm">
                         O<span className="text-indigo-200">5</span>
@@ -58,7 +58,7 @@ export const Home: React.FC<HomeProps> = ({ courses, onSelectCourse, onLogout })
             <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar pb-32">
                 
                 {/* ID Card / School Profile */}
-                <div className="w-full bg-slate-900 rounded-[32px] p-6 text-white shadow-xl shadow-slate-200 relative overflow-hidden group">
+                <div className="w-full bg-slate-900 rounded-[32px] p-6 text-white shadow-xl shadow-slate-200 relative overflow-hidden group shrink-0">
                     <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500 opacity-20 rounded-full blur-3xl transform translate-x-10 -translate-y-10"></div>
                     <div className="absolute bottom-0 left-0 w-32 h-32 bg-sky-500 opacity-20 rounded-full blur-2xl transform -translate-x-5 translate-y-5"></div>
 
@@ -93,7 +93,7 @@ export const Home: React.FC<HomeProps> = ({ courses, onSelectCourse, onLogout })
                 </div>
 
                 {/* Quick Actions */}
-                <div>
+                <div className="shrink-0">
                     <h3 className="text-slate-800 font-bold text-base mb-4 px-1">Quick Actions</h3>
                     <div className="flex justify-between gap-2 overflow-x-auto no-scrollbar pb-2">
                         <MenuItem 
@@ -131,7 +131,7 @@ export const Home: React.FC<HomeProps> = ({ courses, onSelectCourse, onLogout })
                 </div>
 
                 {/* Courses List */}
-                <div>
+                <div className="pb-4">
                     <div className="flex justify-between items-center mb-4 px-1">
                         <h3 className="text-slate-800 font-bold text-base">My Courses</h3>
                         <button className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors">
@@ -177,9 +177,17 @@ export const Home: React.FC<HomeProps> = ({ courses, onSelectCourse, onLogout })
                 </div>
             </div>
 
-            {/* Modals */}
-            <BusTracker isOpen={isBusTrackerOpen} onClose={() => setIsBusTrackerOpen(false)} />
-            <FeePayment isOpen={isFeePaymentOpen} onClose={() => setIsFeePaymentOpen(false)} />
+            {/* Modals - Absolute to simulate phone modal */}
+            {isBusTrackerOpen && (
+                 <div className="absolute inset-0 z-50">
+                    <BusTracker isOpen={isBusTrackerOpen} onClose={() => setIsBusTrackerOpen(false)} />
+                 </div>
+            )}
+            {isFeePaymentOpen && (
+                <div className="absolute inset-0 z-50">
+                     <FeePayment isOpen={isFeePaymentOpen} onClose={() => setIsFeePaymentOpen(false)} />
+                </div>
+            )}
         </div>
     );
 };

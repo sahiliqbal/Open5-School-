@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { MOCK_ATTENDANCE, MOCK_SALARY } from '../constants';
-import { LogOut, CheckCircle, XCircle, Clock, DollarSign, Calendar, Plus, Home, ClipboardList, GraduationCap, FileText, UserCog, Star, Users, ChevronRight, ChevronLeft, UserX, StickyNote, Trophy } from 'lucide-react';
+import { LogOut, DollarSign, Calendar, Plus, Home, ClipboardList, GraduationCap } from 'lucide-react';
 
 interface TeacherDashboardProps {
     onLogout: () => void;
@@ -10,14 +10,27 @@ type Tab = 'HOME' | 'PLANNER' | 'ASSIGNMENTS' | 'GRADING';
 
 export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) => {
     const [activeTab, setActiveTab] = useState<Tab>('HOME');
-    const [attendance, setAttendance] = useState(MOCK_ATTENDANCE);
-    const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [attendance] = useState(MOCK_ATTENDANCE);
 
-    // Mock Data State (Simplified for reset)
-    const [lessons] = useState([
+    // Mock Data State
+    const [lessons, setLessons] = useState([
         { id: '1', time: '09:00 AM', subject: 'Math', topic: 'Calculus', classRoom: '302', icon: '📐', color: 'bg-indigo-50' },
         { id: '2', time: '11:30 AM', subject: 'Physics', topic: 'Laws of Motion', classRoom: 'Lab 2', icon: '⚡', color: 'bg-orange-50' }
     ]);
+
+    const handleAddLesson = () => {
+        // In a real app, this would open a modal form
+        const newLesson = {
+            id: Date.now().toString(),
+            time: '01:00 PM',
+            subject: 'Biology',
+            topic: 'New Topic',
+            classRoom: '101',
+            icon: '🧬',
+            color: 'bg-emerald-50'
+        };
+        setLessons([...lessons, newLesson]);
+    };
 
     const renderHeader = () => (
         <div className="px-6 py-6 pb-8 bg-indigo-600 text-white rounded-b-[32px] shadow-lg shadow-indigo-200 z-10 shrink-0">
@@ -75,19 +88,18 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
                 );
             case 'PLANNER':
                 return (
-                    <div className="space-y-4">
+                    <div className="space-y-4 pb-20">
                         <div className="flex justify-between items-center mb-2">
                              <h3 className="font-bold text-slate-800">Today's Schedule</h3>
-                             <button className="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center"><Plus size={16}/></button>
                         </div>
                         {lessons.map(l => (
-                            <div key={l.id} className="bg-white p-4 rounded-[24px] shadow-sm border border-slate-100 flex gap-4">
-                                <div className={`w-16 flex flex-col items-center justify-center rounded-2xl ${l.color} text-lg`}>
+                            <div key={l.id} className="bg-white p-4 rounded-[24px] shadow-sm border border-slate-100 flex gap-4 animate-in slide-in-from-bottom duration-300">
+                                <div className={`w-16 flex flex-col items-center justify-center rounded-2xl ${l.color} text-lg shrink-0`}>
                                     {l.icon}
                                 </div>
-                                <div>
-                                    <h4 className="font-bold text-slate-800">{l.subject}</h4>
-                                    <p className="text-xs text-slate-500 mb-2">{l.topic}</p>
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="font-bold text-slate-800 truncate">{l.subject}</h4>
+                                    <p className="text-xs text-slate-500 mb-2 truncate">{l.topic}</p>
                                     <div className="flex items-center gap-2">
                                         <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded-md">{l.time}</span>
                                         <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded-md">Room {l.classRoom}</span>
@@ -103,25 +115,37 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
     }
 
     return (
-        <div className="h-full flex flex-col bg-slate-50">
+        <div className="h-full flex flex-col bg-slate-50 relative">
             {renderHeader()}
+            
             <div className="flex-1 overflow-y-auto p-6 pb-28 no-scrollbar">
                 {renderContent()}
             </div>
             
+            {/* Floating Action Button for Planner */}
+            {activeTab === 'PLANNER' && (
+                <button 
+                    onClick={handleAddLesson}
+                    className="absolute bottom-24 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-xl shadow-indigo-300 active:scale-90 hover:bg-indigo-700 transition-all z-30 animate-in zoom-in duration-200"
+                >
+                    <Plus size={24} />
+                </button>
+            )}
+
             {/* Bottom Nav */}
-            <div className="bg-white border-t border-slate-200 p-2 pb-6 absolute bottom-0 w-full z-20">
+            <div className="bg-white border-t border-slate-200 p-2 pb-6 absolute bottom-0 w-full z-20 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
                 <div className="flex justify-around items-center">
                     {['HOME', 'PLANNER', 'ASSIGNMENTS', 'GRADING'].map((tab) => (
                         <button 
                             key={tab} 
                             onClick={() => setActiveTab(tab as Tab)}
-                            className={`p-3 rounded-2xl transition-all ${activeTab === tab ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400'}`}
+                            className={`p-3 rounded-2xl transition-all flex flex-col items-center gap-1 ${activeTab === tab ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:bg-slate-50'}`}
                         >
                             {tab === 'HOME' && <Home size={24} />}
                             {tab === 'PLANNER' && <Calendar size={24} />}
                             {tab === 'ASSIGNMENTS' && <ClipboardList size={24} />}
                             {tab === 'GRADING' && <GraduationCap size={24} />}
+                            <span className="text-[9px] font-bold">{tab}</span>
                         </button>
                     ))}
                 </div>

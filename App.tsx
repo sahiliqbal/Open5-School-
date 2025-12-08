@@ -7,7 +7,7 @@ import { Home } from './components/Home';
 import { TeacherDashboard } from './components/TeacherDashboard';
 import { AdminDashboard } from './components/AdminDashboard';
 import { CourseDetail } from './components/CourseDetail';
-import { ScreenState, Course, UserRole } from './types';
+import { ScreenState, Course } from './types';
 import { MOCK_COURSES } from './constants';
 
 const App: React.FC = () => {
@@ -95,7 +95,8 @@ const App: React.FC = () => {
 
     return (
         <div className="flex justify-center min-h-screen bg-slate-100 sm:py-8 font-sans">
-            <div className="w-full sm:max-w-[480px] md:max-w-[500px] lg:max-w-[1024px] bg-white sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative border-x border-slate-200 sm:border-y h-screen sm:h-[850px]">
+            {/* Main App Container - Simulates a Mobile Device Frame on Desktop */}
+            <div className="w-full sm:max-w-[480px] md:max-w-[500px] lg:max-w-[1024px] bg-white sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative border-x border-slate-200 sm:border-y h-[100dvh] sm:h-[850px] flex flex-col">
                 {renderScreen()}
             </div>
         </div>

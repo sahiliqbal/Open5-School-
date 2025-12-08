@@ -67,11 +67,12 @@ export const GeminiTutor: React.FC<GeminiTutorProps> = ({ courseTitle, isOpen, o
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white w-full sm:max-w-md h-[85vh] sm:h-[650px] rounded-t-[32px] sm:rounded-[32px] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300">
+        // Changed fixed to absolute to be relative to the App container (Phone Frame)
+        <div className="absolute inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white w-full h-[95%] sm:h-[90%] rounded-t-[32px] sm:rounded-[24px] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300 mx-0 sm:mx-4">
                 
                 {/* Header */}
-                <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shadow-md z-10">
+                <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shadow-md z-10 shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md">
                             <Bot size={24} />
@@ -118,7 +119,7 @@ export const GeminiTutor: React.FC<GeminiTutorProps> = ({ courseTitle, isOpen, o
                 </div>
 
                 {/* Input */}
-                <div className="p-4 bg-white border-t border-slate-100 pb-8 sm:pb-4">
+                <div className="p-4 bg-white border-t border-slate-100 pb-8 sm:pb-4 shrink-0">
                     <div className="flex gap-2 items-center bg-slate-100 p-1.5 rounded-full border border-slate-200 focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
                         <input
                             type="text"
