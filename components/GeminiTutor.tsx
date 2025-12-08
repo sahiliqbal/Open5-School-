@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { getTutorResponse } from '../services/geminiService';
 import { ChatMessage } from '../types';
-import { Send, X, Bot, User, Loader2 } from 'lucide-react';
+import { Send, X, Bot, User, Loader2, Sparkles } from 'lucide-react';
 
 interface GeminiTutorProps {
     courseTitle: string;
@@ -11,59 +11,26 @@ interface GeminiTutorProps {
 }
 
 export const GeminiTutor: React.FC<GeminiTutorProps> = ({ courseTitle, isOpen, onClose, systemInstruction }) => {
-    
-    const getDynamicGreeting = (title: string) => {
-        const t = title.toLowerCase();
-        if (t.includes('math')) return `Let's crunch some numbers! I'm your ${title} AI Tutor. Ask me about algebra, calculus, or geometry.`;
-        if (t.includes('physic')) return `Ready to explore the universe? I'm your ${title} AI Tutor. Ask me about motion, forces, or energy.`;
-        if (t.includes('chem')) return `Welcome to the lab! I'm your ${title} AI Tutor. Ask me about elements, reactions, or bonding.`;
-        if (t.includes('bio')) return `Let's study life! I'm your ${title} AI Tutor. Ask me about cells, genetics, or ecosystems.`;
-        if (t.includes('history')) return `Let's travel back in time! I'm your ${title} AI Tutor. Ask me about events, figures, or eras.`;
-        if (t.includes('english') || t.includes('language')) return `Words have power! I'm your ${title} AI Tutor. Ask me about grammar, literature, or writing.`;
-        return `Hi! I'm your AI tutor for ${title}. Ask me anything about this subject!`;
-    };
-
-    const [initialGreeting, setInitialGreeting] = useState(getDynamicGreeting(courseTitle));
-
-    const [messages, setMessages] = useState<ChatMessage[]>([
-        {
-            id: 'welcome',
-            role: 'model',
-            text: initialGreeting,
-            timestamp: new Date()
-        }
-    ]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    useEffect(() => {
+        if (isOpen && messages.length === 0) {
+            setMessages([{
+                id: 'welcome',
+                role: 'model',
+                text: `Hi! I'm your ${courseTitle} AI Tutor. How can I help you today?`,
+                timestamp: new Date()
+            }]);
+        }
+        if (isOpen) scrollToBottom();
+    }, [isOpen, courseTitle]);
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
-
-    // Update greeting if courseTitle changes
-    useEffect(() => {
-        const newGreeting = getDynamicGreeting(courseTitle);
-        setInitialGreeting(newGreeting);
-        // Reset messages if the component is being reused for a different course (though usually unmounted)
-        setMessages(prev => {
-            if (prev.length === 1 && prev[0].id === 'welcome') {
-                return [{
-                    id: 'welcome',
-                    role: 'model',
-                    text: newGreeting,
-                    timestamp: new Date()
-                }];
-            }
-            return prev;
-        });
-    }, [courseTitle]);
-
-    useEffect(() => {
-        if (isOpen) {
-            scrollToBottom();
-        }
-    }, [messages, isOpen]);
 
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
@@ -79,44 +46,41 @@ export const GeminiTutor: React.FC<GeminiTutorProps> = ({ courseTitle, isOpen, o
         setInput('');
         setIsLoading(true);
 
-        // Prepare history for API
-        const history = messages.map(m => ({
-            role: m.role,
-            text: m.text
-        }));
+        const history = messages.map(m => ({ role: m.role, text: m.text }));
 
         try {
             const responseText = await getTutorResponse(courseTitle, userMsg.text, history, systemInstruction);
-            
-            const botMsg: ChatMessage = {
+            setMessages(prev => [...prev, {
                 id: (Date.now() + 1).toString(),
                 role: 'model',
                 text: responseText,
                 timestamp: new Date()
-            };
-            setMessages(prev => [...prev, botMsg]);
+            }]);
         } catch (error) {
             console.error(error);
         } finally {
             setIsLoading(false);
+            scrollToBottom();
         }
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white w-full sm:max-w-md h-[85vh] sm:h-[600px] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white w-full sm:max-w-md h-[85vh] sm:h-[650px] rounded-t-[32px] sm:rounded-[32px] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300">
                 
                 {/* Header */}
-                <div className={`p-4 bg-gradient-to-r from-indigo-500 to-purple-600 flex justify-between items-center text-white`}>
-                    <div className="flex items-center gap-2">
-                        <div className="p-2 bg-white/20 rounded-full">
-                            <Bot size={20} />
+                <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shadow-md z-10">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md">
+                            <Bot size={24} />
                         </div>
                         <div>
-                            <h3 className="font-bold text-lg">{courseTitle} Tutor</h3>
-                            <p className="text-xs text-indigo-100">Powered by Gemini AI</p>
+                            <h3 className="font-bold text-lg leading-tight">{courseTitle} Tutor</h3>
+                            <div className="flex items-center gap-1 text-indigo-200 text-xs">
+                                <Sparkles size={10} /> Powered by Gemini
+                            </div>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
@@ -125,23 +89,18 @@ export const GeminiTutor: React.FC<GeminiTutorProps> = ({ courseTitle, isOpen, o
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 bg-slate-50 space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
                     {messages.map((msg) => (
-                        <div
-                            key={msg.id}
-                            className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                        >
-                            <div className={`flex max-w-[80%] gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-indigo-100 text-indigo-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                                    {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
+                        <div key={msg.id} className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`flex max-w-[85%] gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-auto ${msg.role === 'user' ? 'bg-indigo-100 text-indigo-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                    {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
                                 </div>
-                                <div
-                                    className={`p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
-                                        msg.role === 'user'
-                                            ? 'bg-indigo-600 text-white rounded-tr-none'
-                                            : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
-                                    }`}
-                                >
+                                <div className={`p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm ${
+                                    msg.role === 'user'
+                                        ? 'bg-indigo-600 text-white rounded-br-none'
+                                        : 'bg-white text-slate-700 border border-slate-100 rounded-bl-none'
+                                }`}>
                                     {msg.text}
                                 </div>
                             </div>
@@ -149,36 +108,32 @@ export const GeminiTutor: React.FC<GeminiTutorProps> = ({ courseTitle, isOpen, o
                     ))}
                     {isLoading && (
                         <div className="flex justify-start w-full">
-                            <div className="flex max-w-[80%] gap-2">
-                                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
-                                    <Bot size={16} />
-                                </div>
-                                <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm">
-                                    <Loader2 className="animate-spin text-indigo-500" size={16} />
-                                </div>
+                            <div className="flex items-center gap-2 bg-white px-4 py-3 rounded-2xl rounded-bl-none border border-slate-100 shadow-sm ml-10">
+                                <Loader2 className="animate-spin text-indigo-500" size={16} />
+                                <span className="text-xs text-slate-400 font-medium">Thinking...</span>
                             </div>
                         </div>
                     )}
                     <div ref={messagesEndRef} />
                 </div>
 
-                {/* Input Area */}
-                <div className="p-4 bg-white border-t border-slate-100">
-                    <div className="flex gap-2">
+                {/* Input */}
+                <div className="p-4 bg-white border-t border-slate-100 pb-8 sm:pb-4">
+                    <div className="flex gap-2 items-center bg-slate-100 p-1.5 rounded-full border border-slate-200 focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
                         <input
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                             placeholder="Ask a question..."
-                            className="flex-1 bg-slate-100 border-none rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                            className="flex-1 bg-transparent border-none px-4 py-2 text-sm focus:outline-none placeholder:text-slate-400 text-slate-700"
                         />
                         <button
                             onClick={handleSend}
                             disabled={isLoading || !input.trim()}
-                            className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-3 rounded-full shadow-lg transition-transform active:scale-95"
+                            className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:bg-indigo-700 transition-colors"
                         >
-                            <Send size={20} />
+                            <Send size={18} />
                         </button>
                     </div>
                 </div>

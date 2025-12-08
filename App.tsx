@@ -11,25 +11,30 @@ import { ScreenState, Course, UserRole } from './types';
 import { MOCK_COURSES } from './constants';
 
 const App: React.FC = () => {
-    // Initialize Onboarding state from localStorage
+    // Robust State Initialization with Error Handling
     const [isOnboarded, setIsOnboarded] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('open5_isOnboarded') === 'true';
-        }
+        try {
+            if (typeof window !== 'undefined') {
+                return localStorage.getItem('open5_isOnboarded') === 'true';
+            }
+        } catch (e) { console.error(e); }
         return false;
     });
 
-    // Initialize Screen/Session state from localStorage
     const [screen, setScreen] = useState<ScreenState>(() => {
-        if (typeof window !== 'undefined') {
-            const savedScreen = localStorage.getItem('open5_screen');
-            if (savedScreen) {
-                const parsed = parseInt(savedScreen);
-                // If saved state was details, revert to home as we don't persist selectedCourse yet
-                if (parsed === ScreenState.STUDENT_DETAILS) return ScreenState.STUDENT_HOME;
-                return parsed;
+        try {
+            if (typeof window !== 'undefined') {
+                const savedScreen = localStorage.getItem('open5_screen');
+                if (savedScreen) {
+                    const parsed = parseInt(savedScreen);
+                    if (!isNaN(parsed)) {
+                         // Fallback for detail view refresh
+                        if (parsed === ScreenState.STUDENT_DETAILS) return ScreenState.STUDENT_HOME;
+                        return parsed;
+                    }
+                }
             }
-        }
+        } catch (e) { console.error(e); }
         return ScreenState.ROLE_SELECTION;
     });
 
@@ -37,107 +42,62 @@ const App: React.FC = () => {
 
     // Persistence Effects
     useEffect(() => {
-        localStorage.setItem('open5_isOnboarded', String(isOnboarded));
+        try {
+            localStorage.setItem('open5_isOnboarded', String(isOnboarded));
+        } catch (e) {}
     }, [isOnboarded]);
 
     useEffect(() => {
-        localStorage.setItem('open5_screen', screen.toString());
+        try {
+            localStorage.setItem('open5_screen', screen.toString());
+        } catch (e) {}
     }, [screen]);
 
     const handleOnboardingComplete = () => {
         setIsOnboarded(true);
-        // After onboarding, go to Welcome Screen
         setScreen(ScreenState.WELCOME);
-    };
-
-    const handleWelcomeLogin = () => {
-        setScreen(ScreenState.LOGIN);
-    };
-
-    const handleLoginSuccess = () => {
-        // After Login, go to Role Selection to pick portal
-        setScreen(ScreenState.ROLE_SELECTION);
-    };
-
-    const handleRoleSelect = (role: UserRole) => {
-        switch (role) {
-            case 'STUDENT':
-                setScreen(ScreenState.STUDENT_HOME);
-                break;
-            case 'TEACHER':
-                setScreen(ScreenState.TEACHER_DASHBOARD);
-                break;
-            case 'ADMIN':
-                setScreen(ScreenState.ADMIN_DASHBOARD);
-                break;
-        }
     };
 
     const handleLogout = () => {
         setScreen(ScreenState.WELCOME);
         setSelectedCourse(null);
-        // We purposefully don't clear isOnboarded on logout
     };
 
-    const handleSelectCourse = (course: Course) => {
-        setSelectedCourse(course);
-        setScreen(ScreenState.STUDENT_DETAILS);
+    // Routing Logic
+    const renderScreen = () => {
+        switch (screen) {
+            case ScreenState.WELCOME:
+                return <Welcome onLogin={() => setScreen(ScreenState.LOGIN)} onSignUp={() => setScreen(ScreenState.LOGIN)} />;
+            case ScreenState.LOGIN:
+                return <Login onSuccess={() => setScreen(ScreenState.ROLE_SELECTION)} onBack={() => setScreen(ScreenState.WELCOME)} />;
+            case ScreenState.ROLE_SELECTION:
+                return <RoleSelection onSelectRole={(role) => {
+                    if (role === 'STUDENT') setScreen(ScreenState.STUDENT_HOME);
+                    if (role === 'TEACHER') setScreen(ScreenState.TEACHER_DASHBOARD);
+                    if (role === 'ADMIN') setScreen(ScreenState.ADMIN_DASHBOARD);
+                }} />;
+            case ScreenState.STUDENT_HOME:
+                return <Home courses={MOCK_COURSES} onSelectCourse={(c) => { setSelectedCourse(c); setScreen(ScreenState.STUDENT_DETAILS); }} onLogout={handleLogout} />;
+            case ScreenState.STUDENT_DETAILS:
+                return selectedCourse ? <CourseDetail course={selectedCourse} onBack={() => { setSelectedCourse(null); setScreen(ScreenState.STUDENT_HOME); }} /> : <Home courses={MOCK_COURSES} onSelectCourse={(c) => { setSelectedCourse(c); setScreen(ScreenState.STUDENT_DETAILS); }} onLogout={handleLogout} />;
+            case ScreenState.TEACHER_DASHBOARD:
+                return <TeacherDashboard onLogout={handleLogout} />;
+            case ScreenState.ADMIN_DASHBOARD:
+                return <AdminDashboard onLogout={handleLogout} />;
+            default:
+                return <RoleSelection onSelectRole={(role) => setScreen(ScreenState.STUDENT_HOME)} />;
+        }
     };
 
-    const handleBackFromDetails = () => {
-        setScreen(ScreenState.STUDENT_HOME);
-        setSelectedCourse(null);
-    };
-
-    // Initial check for onboarding
     if (!isOnboarded) {
         return <Onboarding onStart={handleOnboardingComplete} />;
     }
 
     return (
-        <div className="w-full mx-auto bg-white shadow-2xl min-h-screen relative overflow-hidden font-sans sm:max-w-5xl sm:my-8 sm:rounded-[32px] sm:border-[8px] sm:border-slate-800">
-            {/* Desktop Mockup Border Adjustment wrapper could go here, keeping it simple for now */}
-            
-            {screen === ScreenState.WELCOME && (
-                <Welcome 
-                    onLogin={handleWelcomeLogin} 
-                    onSignUp={handleWelcomeLogin} 
-                />
-            )}
-
-            {screen === ScreenState.LOGIN && (
-                <Login 
-                    onSuccess={handleLoginSuccess} 
-                    onBack={() => setScreen(ScreenState.WELCOME)} 
-                />
-            )}
-
-            {screen === ScreenState.ROLE_SELECTION && (
-                <RoleSelection onSelectRole={handleRoleSelect} />
-            )}
-
-            {screen === ScreenState.STUDENT_HOME && (
-                <Home 
-                    courses={MOCK_COURSES} 
-                    onSelectCourse={handleSelectCourse}
-                    onLogout={handleLogout}
-                />
-            )}
-            
-            {screen === ScreenState.STUDENT_DETAILS && selectedCourse && (
-                <CourseDetail 
-                    course={selectedCourse} 
-                    onBack={handleBackFromDetails} 
-                />
-            )}
-
-            {screen === ScreenState.TEACHER_DASHBOARD && (
-                <TeacherDashboard onLogout={handleLogout} />
-            )}
-
-            {screen === ScreenState.ADMIN_DASHBOARD && (
-                <AdminDashboard onLogout={handleLogout} />
-            )}
+        <div className="flex justify-center min-h-screen bg-slate-100 sm:py-8 font-sans">
+            <div className="w-full sm:max-w-[480px] md:max-w-[500px] lg:max-w-[1024px] bg-white sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative border-x border-slate-200 sm:border-y h-screen sm:h-[850px]">
+                {renderScreen()}
+            </div>
         </div>
     );
 };
