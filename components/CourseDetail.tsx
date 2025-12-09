@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Course } from '../types';
-import { ChevronLeft, Star, PlayCircle, Lock, MessageCircle, ArrowRight } from 'lucide-react';
+import { ChevronLeft, Star, PlayCircle, Lock, MessageCircle, ArrowRight, Clock, Award } from 'lucide-react';
 import { GeminiTutor } from './GeminiTutor';
 
 interface CourseDetailProps {
@@ -11,7 +11,6 @@ interface CourseDetailProps {
 export const CourseDetail: React.FC<CourseDetailProps> = ({ course, onBack }) => {
     const [isTutorOpen, setIsTutorOpen] = useState(false);
     
-    // Dynamic system instruction
     const tutorSystemInstruction = `You are an expert AI Tutor for the course "${course.title}".
     Course Description: ${course.description}
     Syllabus Topics:
@@ -21,90 +20,98 @@ export const CourseDetail: React.FC<CourseDetailProps> = ({ course, onBack }) =>
     const isFirstItemUnlocked = course.syllabus.length > 0 && !course.syllabus[0].isLocked;
 
     return (
-        <div className="h-full bg-white flex flex-col relative overflow-hidden">
-            {/* Navbar */}
-            <div className="px-6 py-4 flex justify-between items-center z-20 absolute top-0 left-0 right-0 pointer-events-none">
+        <div className="h-full bg-white flex flex-col relative overflow-hidden animate-in slide-in-from-right duration-300">
+            {/* Floating Navigation */}
+            <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-20">
                 <button 
                     onClick={onBack}
-                    className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 transition-colors text-white pointer-events-auto shadow-lg"
+                    className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors text-white shadow-lg"
                 >
-                    <ChevronLeft size={20} />
+                    <ChevronLeft size={22} />
                 </button>
             </div>
 
-            {/* Hero Section */}
-            <div className={`w-full h-[320px] bg-gradient-to-br ${course.colorFrom} ${course.colorTo} relative shrink-0`}>
-                 <div className="absolute inset-0 bg-black/10"></div>
-                 <div className="absolute bottom-0 left-0 right-0 p-8 pb-12 pt-32 bg-gradient-to-t from-black/60 to-transparent">
-                     <div className="flex items-center gap-2 mb-3">
-                        <span className="px-2.5 py-1 rounded-lg bg-white/20 backdrop-blur-md border border-white/10 text-xs font-bold text-white">
-                            Intermediate
-                        </span>
-                        <div className="flex items-center gap-1 text-amber-300">
-                            <Star size={14} fill="currentColor" />
-                            <span className="text-sm font-bold text-white">{course.rating}</span>
-                        </div>
+            {/* Immersive Hero */}
+            <div className={`w-full h-[380px] bg-gradient-to-br ${course.colorFrom} ${course.colorTo} relative shrink-0`}>
+                 {/* Texture/Pattern */}
+                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                 <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-black/20"></div>
+
+                 <div className="absolute bottom-0 left-0 right-0 p-8 pb-12 pt-32">
+                     <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full border border-white/10 self-start">
+                        <Award size={14} className="text-white" />
+                        <span className="text-[10px] font-bold text-white uppercase tracking-wider">Premium Course</span>
                      </div>
-                     <h1 className="text-3xl font-bold text-white mb-2 leading-tight">{course.title}</h1>
-                     <p className="text-white/80 text-sm line-clamp-2 max-w-md">{course.description}</p>
+                     <h1 className="text-4xl font-bold text-slate-900 mb-3 leading-tight tracking-tight mix-blend-screen">{course.title}</h1>
+                     <div className="flex items-center gap-4 text-slate-600 font-medium text-sm">
+                        <span className="flex items-center gap-1"><Star size={14} className="fill-slate-900 text-slate-900"/> {course.rating}</span>
+                        <span>•</span>
+                        <span>{course.reviews} Reviews</span>
+                        <span>•</span>
+                        <span>{course.syllabus.length} Lessons</span>
+                     </div>
                  </div>
                  
-                 {/* Icon Decoration */}
-                 <div className="absolute top-24 right-8 text-9xl opacity-20 filter blur-sm select-none animate-pulse">
+                 {/* Hero Icon Decoration */}
+                 <div className="absolute top-24 right-6 text-9xl opacity-20 filter blur-sm select-none animate-pulse rotate-12">
                      {course.icon}
                  </div>
             </div>
 
-            {/* Syllabus List Container */}
-            <div className="flex-1 bg-white -mt-8 rounded-t-[32px] relative z-10 px-6 pt-8 pb-32 overflow-y-auto">
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-slate-800">Course Content</h2>
-                    <span className="text-xs font-bold text-slate-400">{course.syllabus.length} Lessons</span>
+            {/* Syllabus Container */}
+            <div className="flex-1 bg-white -mt-6 rounded-t-[40px] relative z-10 px-6 pt-10 pb-32 overflow-y-auto">
+                <div className="flex justify-between items-end mb-8">
+                    <h2 className="text-2xl font-bold text-slate-900">Curriculum</h2>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">0% Completed</span>
                 </div>
 
-                <div className="space-y-4">
+                {/* Timeline Layout */}
+                <div className="relative pl-4 space-y-8">
+                    {/* Timeline Line */}
+                    <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-slate-100"></div>
+
                     {course.syllabus.map((item, index) => (
-                        <div 
-                            key={item.id} 
-                            className={`flex items-center justify-between p-4 rounded-2xl transition-all border ${
-                                index === 0 
-                                ? 'bg-indigo-50 border-indigo-100' 
-                                : 'bg-white border-slate-100 hover:border-slate-200'
-                            }`}
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
-                                    index === 0 ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-200' : 'bg-slate-100 text-slate-400'
-                                }`}>
-                                    {index + 1}
-                                </div>
-                                <div>
-                                    <h3 className={`font-bold text-sm mb-0.5 ${index === 0 ? 'text-indigo-900' : 'text-slate-700'}`}>{item.title}</h3>
-                                    <p className="text-xs text-slate-400 font-medium">{item.duration}</p>
-                                </div>
+                        <div key={item.id} className="relative flex items-center gap-5 group">
+                            {/* Timeline Node */}
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center z-10 border-4 border-white shadow-sm transition-colors ${
+                                index === 0 ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400'
+                            }`}>
+                                <span className="text-xs font-bold">{index + 1}</span>
                             </div>
-                            
-                            <button className={`w-10 h-10 rounded-full flex items-center justify-center ${item.isLocked ? 'text-slate-300' : 'text-indigo-500 bg-white shadow-sm'}`}>
-                                {item.isLocked ? <Lock size={16} /> : <PlayCircle size={24} fill="currentColor" className="text-indigo-500 bg-white rounded-full" />}
+
+                            <button className={`flex-1 flex items-center justify-between p-5 rounded-[24px] border transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                                index === 0 
+                                ? 'bg-white border-slate-900/10 shadow-lg shadow-slate-200' 
+                                : 'bg-slate-50 border-transparent opacity-60 hover:opacity-100'
+                            }`}>
+                                <div>
+                                    <h3 className={`font-bold text-base mb-1 ${index === 0 ? 'text-slate-900' : 'text-slate-700'}`}>{item.title}</h3>
+                                    <div className="flex items-center gap-1 text-xs text-slate-400 font-bold uppercase tracking-wide">
+                                        <Clock size={10} /> {item.duration}
+                                    </div>
+                                </div>
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${item.isLocked ? 'bg-slate-100 text-slate-400' : 'bg-slate-900 text-white shadow-md'}`}>
+                                    {item.isLocked ? <Lock size={16} /> : <PlayCircle size={20} fill="currentColor" />}
+                                </div>
                             </button>
                         </div>
                     ))}
                 </div>
             </div>
 
-            {/* Sticky Footer */}
-            <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-100 p-4 pb-6 z-20 flex gap-3 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+            {/* Action Bar */}
+            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-white/0 z-20 flex gap-4 pt-12">
                  <button 
                     onClick={() => setIsTutorOpen(true)}
-                    className="aspect-square h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex flex-col items-center justify-center shadow-sm active:scale-95 transition-transform border border-indigo-100 hover:bg-indigo-100"
+                    className="w-16 h-16 bg-white text-indigo-600 rounded-[22px] flex flex-col items-center justify-center shadow-lg shadow-slate-200 border border-slate-100 active:scale-90 transition-transform"
                 >
-                    <MessageCircle size={22} />
-                    <span className="text-[9px] font-bold mt-1">AI Help</span>
+                    <MessageCircle size={24} />
+                    <span className="text-[8px] font-bold uppercase mt-1">AI Tutor</span>
                 </button>
                 
-                <button className="flex-1 bg-slate-900 text-white font-bold text-base rounded-2xl shadow-xl shadow-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                    {isFirstItemUnlocked ? 'Continue Learning' : 'Start Course'}
-                    <ArrowRight size={18} />
+                <button className="flex-1 bg-slate-900 text-white font-bold text-lg rounded-[22px] shadow-2xl shadow-slate-400 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                    {isFirstItemUnlocked ? 'Start Learning' : 'Enroll Now'}
+                    <ArrowRight size={20} />
                 </button>
             </div>
 

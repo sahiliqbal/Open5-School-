@@ -98,9 +98,9 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="flex justify-center min-h-[100dvh] bg-slate-200 sm:py-8 font-sans">
-            {/* Main App Container - Simulates a Mobile Device Frame on Desktop */}
-            <div className="w-full sm:max-w-[480px] md:max-w-[500px] lg:max-w-[1024px] bg-slate-50 sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative border-x border-slate-200 sm:border-y h-[100dvh] sm:h-[850px] flex flex-col">
+        <div className="flex justify-center items-center min-h-[100dvh] bg-slate-200 font-sans p-0 sm:p-4 md:p-8">
+            {/* Main App Container - Simulates a High-End Mobile Device Frame */}
+            <div className="w-full h-[100dvh] sm:h-[844px] sm:max-w-[390px] md:max-w-[420px] bg-slate-50 sm:rounded-[40px] shadow-2xl overflow-hidden relative border-[8px] border-slate-900/5 sm:border-slate-900 ring-1 ring-slate-900/5 flex flex-col">
                 {renderScreen()}
             </div>
         </div>
