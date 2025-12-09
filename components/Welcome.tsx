@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CactusLogo } from './CactusLogo';
-import { ArrowRight, Brain, Bus, CreditCard, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Backpack, Calculator, Palette, BookOpen } from 'lucide-react';
 
 interface WelcomeProps {
     onLogin: () => void;
@@ -10,29 +10,38 @@ interface WelcomeProps {
 const BANNERS = [
     {
         id: 1,
-        title: "AI-Powered Tutor",
-        description: "Get instant homework help from Gemini AI.",
-        icon: <Brain size={32} className="text-white" />,
-        bgGradient: "bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600",
+        title: "Digital Backpack",
+        description: "Keep your notes, syllabus, and lessons organized in one place.",
+        icon: <Backpack size={32} className="text-white" />,
+        bgGradient: "bg-gradient-to-br from-indigo-500 to-blue-500",
         shadow: "shadow-indigo-200",
         accent: "bg-white/20"
     },
     {
         id: 2,
-        title: "Live Bus Tracking",
-        description: "Know exactly when the school bus arrives.",
-        icon: <Bus size={32} className="text-white" />,
-        bgGradient: "bg-gradient-to-br from-orange-400 via-orange-500 to-pink-500",
+        title: "Math & Logic",
+        description: "Master complex equations with smart AI-powered tools.",
+        icon: <Calculator size={32} className="text-white" />,
+        bgGradient: "bg-gradient-to-br from-slate-700 to-slate-900",
+        shadow: "shadow-slate-200",
+        accent: "bg-yellow-400/20"
+    },
+    {
+        id: 3,
+        title: "Art & Design",
+        description: "Unleash your creativity with interactive art modules.",
+        icon: <Palette size={32} className="text-white" />,
+        bgGradient: "bg-gradient-to-br from-orange-400 to-red-500",
         shadow: "shadow-orange-200",
         accent: "bg-white/20"
     },
     {
-        id: 3,
-        title: "Easy Fee Payments",
-        description: "Manage school fees and invoices securely.",
-        icon: <CreditCard size={32} className="text-white" />,
-        bgGradient: "bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600",
-        shadow: "shadow-emerald-200",
+        id: 4,
+        title: "Start Learning",
+        description: "Welcome to the new academic session. Let's achieve more!",
+        icon: <BookOpen size={32} className="text-white" />,
+        bgGradient: "bg-gradient-to-br from-fuchsia-500 to-purple-600",
+        shadow: "shadow-fuchsia-200",
         accent: "bg-white/20"
     }
 ];
