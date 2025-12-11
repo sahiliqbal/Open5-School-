@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CactusLogo } from './CactusLogo';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, ChevronLeft, Backpack, Fingerprint, ScanFace } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ChevronLeft, Backpack, Fingerprint, ScanFace, ShieldCheck } from 'lucide-react';
 
 interface LoginProps {
     onSuccess: () => void;
@@ -15,13 +15,15 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
     const [isLoading, setIsLoading] = useState(false);
     const [loadingType, setLoadingType] = useState<'generic' | 'student' | 'biometric' | null>(null);
     const [isBiometricSupported, setIsBiometricSupported] = useState(false);
+    const [biometricType, setBiometricType] = useState<'face' | 'touch'>('touch');
 
     // Check for Biometric Support (WebAuthn)
     useEffect(() => {
-        if (window.PublicKeyCredential) {
-            // In a real app, you would also check specifically if a platform authenticator is available
-            // PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(...)
+        // Safe check for PublicKeyCredential which might not be in all TS env definitions
+        if (typeof window !== 'undefined' && (window as any).PublicKeyCredential) {
             setIsBiometricSupported(true);
+            // Simulate detecting Face ID vs Touch ID for UI variety
+            setBiometricType(Math.random() > 0.5 ? 'face' : 'touch');
         }
     }, []);
 
@@ -133,18 +135,46 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
                             )}
                         </button>
 
+                        {isBiometricSupported && (
+                            <button 
+                                type="button"
+                                onClick={handleBiometricLogin}
+                                disabled={isLoading}
+                                className="w-full bg-indigo-50 text-indigo-700 font-bold text-lg py-4 rounded-[24px] border border-indigo-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group hover:bg-indigo-100"
+                            >
+                                {loadingType === 'biometric' ? (
+                                    <>
+                                        <div className="w-5 h-5 border-2 border-indigo-300 border-t-indigo-700 rounded-full animate-spin" />
+                                        <span className="text-sm">Verifying {biometricType === 'face' ? 'Face ID' : 'Biometrics'}...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        Login with {biometricType === 'face' ? 'Face ID' : 'Touch ID'} 
+                                        {biometricType === 'face' ? (
+                                            <ScanFace size={20} className="text-indigo-400 group-hover:text-indigo-600 transition-colors" />
+                                        ) : (
+                                            <Fingerprint size={20} className="text-indigo-400 group-hover:text-indigo-600 transition-colors" />
+                                        )}
+                                    </>
+                                )}
+                            </button>
+                        )}
+
                         {onStudentLogin && (
                             <button 
                                 type="button"
-                                onClick={(e) => { e.preventDefault(); authenticate(onStudentLogin, 'student'); }}
+                                onClick={(e) => { 
+                                    e.preventDefault(); 
+                                    if (onStudentLogin) authenticate(onStudentLogin, 'student'); 
+                                }}
                                 disabled={isLoading}
-                                className="w-full bg-orange-500 text-white font-bold text-lg py-4 rounded-[24px] shadow-lg shadow-orange-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
+                                className="w-full bg-white text-slate-700 font-bold text-lg py-4 rounded-[24px] shadow-sm border border-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group hover:bg-slate-50"
                             >
                                 {loadingType === 'student' ? (
-                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
                                 ) : (
                                     <>
-                                        Student Login <Backpack size={20} className="text-orange-200 group-hover:text-white transition-colors" />
+                                        Student Portal Demo <Backpack size={20} className="text-slate-400 group-hover:text-slate-600 transition-colors" />
                                     </>
                                 )}
                             </button>
@@ -152,29 +182,9 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
                     </div>
                 </form>
 
-                <div className="mt-auto pt-8 flex items-center justify-center gap-4">
-                    <button className="w-12 h-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-slate-500 hover:text-indigo-600 shadow-sm transition-colors">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12.0003 20.45C6.79029 20.45 2.55029 16.21 2.55029 11C2.55029 5.79 6.79029 1.55 12.0003 1.55C17.2103 1.55 21.4503 5.79 21.4503 11C21.4503 16.21 17.2103 20.45 12.0003 20.45ZM12.0003 3.55C7.89029 3.55 4.55029 6.89 4.55029 11C4.55029 15.11 7.89029 18.45 12.0003 18.45C16.1103 18.45 19.4503 15.11 19.4503 11C19.4503 6.89 16.1103 3.55 12.0003 3.55ZM10.5503 14.75L15.2503 10.05C15.6403 9.66 15.6403 9.03 15.2503 8.64C14.8603 8.25 14.2303 8.25 13.8403 8.64L9.84029 12.64L8.43029 11.23C8.04029 10.84 7.41029 10.84 7.02029 11.23C6.63029 11.62 6.63029 12.25 7.02029 12.64L9.14029 14.76C9.53029 15.15 10.1603 15.15 10.5503 14.75Z" /></svg>
-                    </button>
-                    
-                    {isBiometricSupported && (
-                        <button 
-                            onClick={handleBiometricLogin}
-                            disabled={isLoading}
-                            className={`w-12 h-12 bg-white border rounded-2xl flex items-center justify-center shadow-sm transition-all ${
-                                loadingType === 'biometric' 
-                                ? 'border-indigo-500 text-indigo-600 ring-2 ring-indigo-100' 
-                                : 'border-slate-100 text-slate-500 hover:text-indigo-600'
-                            }`}
-                            aria-label="Login with Biometrics"
-                        >
-                            {loadingType === 'biometric' ? (
-                                <div className="w-5 h-5 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
-                            ) : (
-                                <Fingerprint size={24} />
-                            )}
-                        </button>
-                    )}
+                <div className="mt-auto pt-8 flex items-center justify-center gap-2 text-xs font-medium text-slate-400">
+                    <ShieldCheck size={14} />
+                    <span>Secure Enrollment System</span>
                 </div>
             </div>
         </div>
