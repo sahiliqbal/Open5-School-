@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Course } from '../types';
-import { ChevronLeft, Star, PlayCircle, Lock, MessageCircle, ArrowRight, Clock, Award } from 'lucide-react';
+import { ChevronLeft, Star, PlayCircle, Lock, MessageCircle, ArrowRight, Clock, Award, Search, X } from 'lucide-react';
 import { GeminiTutor } from './GeminiTutor';
 
 interface CourseDetailProps {
@@ -10,6 +10,7 @@ interface CourseDetailProps {
 
 export const CourseDetail: React.FC<CourseDetailProps> = ({ course, onBack }) => {
     const [isTutorOpen, setIsTutorOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     
     const tutorSystemInstruction = `You are an expert AI Tutor for the course "${course.title}".
     Course Description: ${course.description}
@@ -18,6 +19,10 @@ export const CourseDetail: React.FC<CourseDetailProps> = ({ course, onBack }) =>
     Your goal is to help the student understand these specific topics. Keep answers concise.`;
 
     const isFirstItemUnlocked = course.syllabus.length > 0 && !course.syllabus[0].isLocked;
+
+    const filteredSyllabus = course.syllabus.filter(item => 
+        item.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="h-full bg-white flex flex-col relative overflow-hidden animate-in slide-in-from-right duration-300">
@@ -60,9 +65,33 @@ export const CourseDetail: React.FC<CourseDetailProps> = ({ course, onBack }) =>
 
             {/* Syllabus Container */}
             <div className="flex-1 bg-white -mt-6 rounded-t-[40px] relative z-10 px-6 pt-10 pb-32 overflow-y-auto">
-                <div className="flex justify-between items-end mb-8">
+                <div className="flex justify-between items-end mb-6">
                     <h2 className="text-2xl font-bold text-slate-900">Curriculum</h2>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">0% Completed</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        {searchTerm ? `Found ${filteredSyllabus.length} lessons` : '0% Completed'}
+                    </span>
+                </div>
+
+                {/* Search Bar */}
+                <div className="mb-8 relative group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-indigo-500 transition-colors">
+                        <Search size={18} />
+                    </div>
+                    <input 
+                        type="text" 
+                        placeholder="Search lessons..." 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-3 pl-11 pr-10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400 text-slate-700"
+                    />
+                    {searchTerm && (
+                        <button 
+                            onClick={() => setSearchTerm('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 bg-slate-200/50 hover:bg-slate-200 rounded-full p-1 transition-all"
+                        >
+                            <X size={14} />
+                        </button>
+                    )}
                 </div>
 
                 {/* Timeline Layout */}
@@ -70,32 +99,38 @@ export const CourseDetail: React.FC<CourseDetailProps> = ({ course, onBack }) =>
                     {/* Timeline Line */}
                     <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-slate-100"></div>
 
-                    {course.syllabus.map((item, index) => (
-                        <div key={item.id} className="relative flex items-center gap-5 group">
-                            {/* Timeline Node */}
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center z-10 border-4 border-white shadow-sm transition-colors ${
-                                index === 0 ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400'
-                            }`}>
-                                <span className="text-xs font-bold">{index + 1}</span>
-                            </div>
+                    {filteredSyllabus.length > 0 ? (
+                        filteredSyllabus.map((item, index) => (
+                            <div key={item.id} className="relative flex items-center gap-5 group animate-in slide-in-from-bottom-2 fade-in duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+                                {/* Timeline Node */}
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center z-10 border-4 border-white shadow-sm transition-colors ${
+                                    index === 0 && !searchTerm ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400'
+                                }`}>
+                                    <span className="text-xs font-bold">{index + 1}</span>
+                                </div>
 
-                            <button className={`flex-1 flex items-center justify-between p-5 rounded-[24px] border transition-all hover:scale-[1.02] active:scale-[0.98] ${
-                                index === 0 
-                                ? 'bg-white border-slate-900/10 shadow-lg shadow-slate-200' 
-                                : 'bg-slate-50 border-transparent opacity-60 hover:opacity-100'
-                            }`}>
-                                <div>
-                                    <h3 className={`font-bold text-base mb-1 ${index === 0 ? 'text-slate-900' : 'text-slate-700'}`}>{item.title}</h3>
-                                    <div className="flex items-center gap-1 text-xs text-slate-400 font-bold uppercase tracking-wide">
-                                        <Clock size={10} /> {item.duration}
+                                <button className={`flex-1 flex items-center justify-between p-5 rounded-[24px] border transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                                    index === 0 && !searchTerm
+                                    ? 'bg-white border-slate-900/10 shadow-lg shadow-slate-200' 
+                                    : 'bg-slate-50 border-transparent opacity-80 hover:opacity-100'
+                                }`}>
+                                    <div className="text-left">
+                                        <h3 className={`font-bold text-base mb-1 ${index === 0 && !searchTerm ? 'text-slate-900' : 'text-slate-700'}`}>{item.title}</h3>
+                                        <div className="flex items-center gap-1 text-xs text-slate-400 font-bold uppercase tracking-wide">
+                                            <Clock size={10} /> {item.duration}
+                                        </div>
                                     </div>
-                                </div>
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${item.isLocked ? 'bg-slate-100 text-slate-400' : 'bg-slate-900 text-white shadow-md'}`}>
-                                    {item.isLocked ? <Lock size={16} /> : <PlayCircle size={20} fill="currentColor" />}
-                                </div>
-                            </button>
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${item.isLocked ? 'bg-slate-100 text-slate-400' : 'bg-slate-900 text-white shadow-md'}`}>
+                                        {item.isLocked ? <Lock size={16} /> : <PlayCircle size={20} fill="currentColor" />}
+                                    </div>
+                                </button>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="text-center py-8 text-slate-400 text-sm font-medium animate-in fade-in zoom-in duration-300">
+                            No lessons found matching "{searchTerm}"
                         </div>
-                    ))}
+                    )}
                 </div>
             </div>
 

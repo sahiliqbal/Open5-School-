@@ -27,9 +27,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
 
     // Mock Data State for Grading
     const [submissions, setSubmissions] = useState([
-        { id: '1', studentName: 'Alice Johnson', title: 'Calculus Homework #4', date: 'Feb 24', status: 'PENDING', content: 'Attached is the PDF solution for the derivatives problem set.', grade: '', feedback: '' },
-        { id: '2', studentName: 'Bob Smith', title: 'Physics Lab Report', date: 'Feb 23', status: 'GRADED', content: 'Experiment results regarding projectile motion.', grade: '88/100', feedback: 'Great analysis.' },
-        { id: '3', studentName: 'Charlie Brown', title: 'Calculus Homework #4', date: 'Feb 24', status: 'PENDING', content: 'Here are my answers.', grade: '', feedback: '' },
+        { id: '1', studentName: 'Alice Johnson', title: 'Calculus Homework #4', date: 'Feb 24', time: '10:30 AM', status: 'PENDING', content: 'Attached is the PDF solution for the derivatives problem set.', grade: '', feedback: '' },
+        { id: '2', studentName: 'Bob Smith', title: 'Physics Lab Report', date: 'Feb 23', time: '02:15 PM', status: 'GRADED', content: 'Experiment results regarding projectile motion.', grade: '88/100', feedback: 'Great analysis.' },
+        { id: '3', studentName: 'Charlie Brown', title: 'Calculus Homework #4', date: 'Feb 24', time: '09:45 AM', status: 'PENDING', content: 'Here are my answers.', grade: '', feedback: '' },
     ]);
 
     const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
@@ -51,7 +51,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
 
     const openGradingModal = (sub: any) => {
         setSelectedSubmission(sub);
-        setGradeInput(sub.grade);
+        // Extract numeric part if it exists in format "88/100" or just use the raw value if it's empty
+        const numericGrade = sub.grade ? sub.grade.toString().split('/')[0] : '';
+        setGradeInput(numericGrade);
         setFeedbackInput(sub.feedback);
     };
 
@@ -59,7 +61,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
         if (!selectedSubmission) return;
         setSubmissions(prev => prev.map(s => 
             s.id === selectedSubmission.id 
-                ? { ...s, grade: gradeInput, feedback: feedbackInput, status: 'GRADED' }
+                ? { ...s, grade: gradeInput ? `${gradeInput}/100` : '', feedback: feedbackInput, status: 'GRADED' }
                 : s
         ));
         setSelectedSubmission(null);
@@ -278,21 +280,28 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
                             </div>
 
                             <div className="bg-slate-50 p-6 rounded-[24px] border border-slate-100">
-                                <div className="flex items-center gap-2 mb-3 text-slate-400">
-                                    <FileText size={16} />
-                                    <span className="text-xs font-bold uppercase tracking-wide">Submission</span>
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2 text-slate-400">
+                                        <FileText size={16} />
+                                        <span className="text-xs font-bold uppercase tracking-wide">Submission</span>
+                                    </div>
+                                    <span className="text-xs font-bold text-slate-400 bg-white px-2 py-1 rounded-md shadow-sm border border-slate-100">
+                                        {selectedSubmission.date} • {selectedSubmission.time}
+                                    </span>
                                 </div>
                                 <p className="text-sm text-slate-700 leading-relaxed font-medium">"{selectedSubmission.content}"</p>
                             </div>
 
                             <div className="space-y-6">
                                 <div>
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1 block mb-2">Score</label>
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1 block mb-2">Numerical Grade (0-100)</label>
                                     <input 
-                                        type="text" 
+                                        type="number"
+                                        min="0"
+                                        max="100"
                                         value={gradeInput}
                                         onChange={(e) => setGradeInput(e.target.value)}
-                                        placeholder="0-100"
+                                        placeholder="Enter points (e.g. 95)"
                                         className="w-full p-4 bg-white border border-slate-200 rounded-[20px] focus:outline-none focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 transition-all font-bold text-slate-900 text-lg"
                                     />
                                 </div>
