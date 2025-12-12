@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Onboarding } from './components/Onboarding';
 import { Welcome } from './components/Welcome';
 import { Login } from './components/Login';
 import { RoleSelection } from './components/RoleSelection';
@@ -11,16 +10,6 @@ import { ScreenState, Course } from './types';
 import { MOCK_COURSES } from './constants';
 
 const App: React.FC = () => {
-    // Robust State Initialization with Error Handling
-    const [isOnboarded, setIsOnboarded] = useState(() => {
-        try {
-            if (typeof window !== 'undefined') {
-                return localStorage.getItem('open5_isOnboarded') === 'true';
-            }
-        } catch (e) { console.error(e); }
-        return false;
-    });
-
     const [screen, setScreen] = useState<ScreenState>(() => {
         try {
             if (typeof window !== 'undefined') {
@@ -35,7 +24,7 @@ const App: React.FC = () => {
                 }
             }
         } catch (e) { console.error(e); }
-        return ScreenState.ROLE_SELECTION;
+        return ScreenState.WELCOME;
     });
 
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -43,20 +32,9 @@ const App: React.FC = () => {
     // Persistence Effects
     useEffect(() => {
         try {
-            localStorage.setItem('open5_isOnboarded', String(isOnboarded));
-        } catch (e) {}
-    }, [isOnboarded]);
-
-    useEffect(() => {
-        try {
             localStorage.setItem('open5_screen', screen.toString());
         } catch (e) {}
     }, [screen]);
-
-    const handleOnboardingComplete = () => {
-        setIsOnboarded(true);
-        setScreen(ScreenState.WELCOME);
-    };
 
     const handleLogout = () => {
         setScreen(ScreenState.WELCOME);
@@ -92,10 +70,6 @@ const App: React.FC = () => {
                 return <RoleSelection onSelectRole={(role) => setScreen(ScreenState.STUDENT_HOME)} />;
         }
     };
-
-    if (!isOnboarded) {
-        return <Onboarding onStart={handleOnboardingComplete} />;
-    }
 
     return (
         <div className="flex justify-center items-center min-h-[100dvh] bg-slate-200 font-sans p-0 sm:p-4 md:p-8">
