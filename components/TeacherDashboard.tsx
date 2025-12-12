@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
-import { LogOut, Bell, Calendar, BookOpen, Users, Clock, MapPin, CheckSquare, Plus, MoreVertical } from 'lucide-react';
+import { LogOut, Bell, Calendar, BookOpen, Users, Clock, MapPin, CheckSquare, Plus, MoreVertical, ChevronDown, ChevronUp, FileText, Video, Link as LinkIcon } from 'lucide-react';
 
 interface TeacherDashboardProps {
     onLogout: () => void;
 }
 
 type TeacherTab = 'PLANNER' | 'CLASSES' | 'STUDENTS';
+
+interface Resource {
+    type: 'PDF' | 'VIDEO' | 'LINK';
+    title: string;
+}
 
 interface Lesson {
     id: string;
@@ -15,17 +20,67 @@ interface Lesson {
     classRoom: string;
     icon: string;
     color: string;
+    resources: Resource[];
+    notes: string;
 }
 
 const MOCK_LESSONS: Lesson[] = [
-    { id: '1', subject: 'Mathematics', topic: 'Calculus: Derivatives', time: '08:30 AM', classRoom: '302', icon: '📐', color: 'bg-orange-100 text-orange-600' },
-    { id: '2', subject: 'Physics', topic: 'Quantum Mechanics Intro', time: '10:15 AM', classRoom: 'Lab A', icon: '⚡', color: 'bg-purple-100 text-purple-600' },
-    { id: '3', subject: 'Chemistry', topic: 'Organic Compounds', time: '01:00 PM', classRoom: 'Lab B', icon: '🧪', color: 'bg-emerald-100 text-emerald-600' },
+    { 
+        id: '1', 
+        subject: 'Mathematics', 
+        topic: 'Calculus: Derivatives', 
+        time: '08:30 AM', 
+        classRoom: '302', 
+        icon: '📐', 
+        color: 'bg-orange-100 text-orange-600',
+        resources: [
+            { type: 'PDF', title: 'Chapter 4 Practice.pdf' },
+            { type: 'VIDEO', title: 'Introduction to Derivatives' }
+        ],
+        notes: 'Review homework questions from yesterday before starting the new topic.'
+    },
+    { 
+        id: '2', 
+        subject: 'Physics', 
+        topic: 'Quantum Mechanics Intro', 
+        time: '10:15 AM', 
+        classRoom: 'Lab A', 
+        icon: '⚡', 
+        color: 'bg-purple-100 text-purple-600',
+        resources: [
+            { type: 'LINK', title: 'Double Slit Experiment Sim' }
+        ],
+        notes: 'Set up the laser equipment 10 mins early. Ensure safety goggles are available.'
+    },
+    { 
+        id: '3', 
+        subject: 'Chemistry', 
+        topic: 'Organic Compounds', 
+        time: '01:00 PM', 
+        classRoom: 'Lab B', 
+        icon: '🧪', 
+        color: 'bg-emerald-100 text-emerald-600',
+        resources: [
+            { type: 'PDF', title: 'Lab Report Template.pdf' },
+            { type: 'PDF', title: 'Safety Guidelines.pdf' }
+        ],
+        notes: 'Collect signed permission slips for next week\'s field trip.'
+    },
 ];
 
 export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) => {
     const [activeTab, setActiveTab] = useState<TeacherTab>('PLANNER');
+    const [expandedLessonId, setExpandedLessonId] = useState<string | null>(null);
     const lessons = MOCK_LESSONS;
+
+    const renderResourceIcon = (type: string) => {
+        switch (type) {
+            case 'PDF': return <FileText size={16} />;
+            case 'VIDEO': return <Video size={16} />;
+            case 'LINK': return <LinkIcon size={16} />;
+            default: return <FileText size={16} />;
+        }
+    };
 
     const renderContent = () => {
         switch (activeTab) {
@@ -38,43 +93,107 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
                         </div>
                         
                         <div className="space-y-4">
-                            {lessons.map((l) => (
-                                <div key={l.id} className="bg-white p-5 rounded-[32px] shadow-sm border border-slate-100 flex gap-5 items-center relative overflow-visible group hover:z-10 transition-all duration-200">
-                                    {/* Tooltip */}
-                                    <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 bg-slate-900 text-white text-[10px] p-3 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none shadow-xl transform translate-y-2 group-hover:translate-y-0 z-50">
-                                        <div className="flex justify-between items-start mb-1">
-                                            <span className="font-bold text-indigo-300 uppercase tracking-wide text-[9px]">Topic Info</span>
-                                        </div>
-                                        <p className="font-medium leading-relaxed mb-1">{l.topic}</p>
-                                        <p className="text-slate-400 text-[9px]">3 resources attached • Click to view</p>
-                                        
-                                        {/* Arrow */}
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-900"></div>
-                                    </div>
-
-                                    {/* Left Bar */}
-                                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-l-[32px]"></div>
-
-                                    <div className={`w-16 h-16 rounded-[20px] ${l.color} flex items-center justify-center text-2xl shrink-0 shadow-inner`}>
-                                        {l.icon}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-start mb-1">
-                                            <h4 className="font-bold text-slate-900 text-lg">{l.subject}</h4>
-                                            <button className="text-slate-300 hover:text-slate-600"><MoreVertical size={16} /></button>
-                                        </div>
-                                        <p className="text-sm text-slate-500 mb-2 font-medium truncate">{l.topic}</p>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
-                                                <Clock size={12} className="text-indigo-500" /> {l.time}
+                            {lessons.map((l) => {
+                                const isExpanded = expandedLessonId === l.id;
+                                return (
+                                    <div 
+                                        key={l.id} 
+                                        onClick={() => setExpandedLessonId(isExpanded ? null : l.id)}
+                                        className={`bg-white p-5 rounded-[32px] shadow-sm border border-slate-100 relative overflow-visible group transition-all duration-300 cursor-pointer ${isExpanded ? 'ring-2 ring-indigo-500/10 shadow-md z-20' : 'hover:z-10'}`}
+                                    >
+                                        {/* Tooltip - Hide when expanded */}
+                                        {!isExpanded && (
+                                            <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 bg-slate-900 text-white text-[10px] p-3 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none shadow-xl transform translate-y-2 group-hover:translate-y-0 z-50">
+                                                <div className="flex justify-between items-start mb-1">
+                                                    <span className="font-bold text-indigo-300 uppercase tracking-wide text-[9px]">Topic Info</span>
+                                                </div>
+                                                <p className="font-medium leading-relaxed mb-1">{l.topic}</p>
+                                                <p className="text-slate-400 text-[9px]">{l.resources.length} resources attached • Click to expand</p>
+                                                
+                                                {/* Arrow */}
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-900"></div>
                                             </div>
-                                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
-                                                <MapPin size={12} className="text-orange-500" /> Rm {l.classRoom}
+                                        )}
+
+                                        {/* Left Bar */}
+                                        <div className={`absolute left-0 top-0 bottom-0 w-2 rounded-l-[32px] transition-all duration-300 ${isExpanded ? 'bg-indigo-600' : 'bg-gradient-to-b from-indigo-500 to-purple-500'}`}></div>
+
+                                        {/* Header Content */}
+                                        <div className="flex gap-5 items-center">
+                                            <div className={`w-16 h-16 rounded-[20px] ${l.color} flex items-center justify-center text-2xl shrink-0 shadow-inner`}>
+                                                {l.icon}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start mb-1">
+                                                    <h4 className="font-bold text-slate-900 text-lg">{l.subject}</h4>
+                                                    <div className="text-slate-300">
+                                                        {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                                    </div>
+                                                </div>
+                                                <p className="text-sm text-slate-500 mb-2 font-medium truncate">{l.topic}</p>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+                                                        <Clock size={12} className="text-indigo-500" /> {l.time}
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+                                                        <MapPin size={12} className="text-orange-500" /> Rm {l.classRoom}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
+
+                                        {/* Expanded Details */}
+                                        {isExpanded && (
+                                            <div className="mt-6 pt-6 border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-300 pl-2">
+                                                <div className="grid grid-cols-1 gap-6">
+                                                    {/* Resources */}
+                                                    <div>
+                                                        <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-3 flex items-center gap-1">
+                                                            <LinkIcon size={12} /> Attached Resources ({l.resources.length})
+                                                        </h5>
+                                                        <div className="space-y-2">
+                                                            {l.resources.map((r, idx) => (
+                                                                <button key={idx} className="w-full flex items-center gap-3 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors group/res text-left border border-slate-100">
+                                                                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-indigo-500 shadow-sm border border-slate-100 group-hover/res:scale-110 transition-transform">
+                                                                        {renderResourceIcon(r.type)}
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <span className="text-xs font-bold text-slate-700 block truncate">{r.title}</span>
+                                                                        <span className="text-[10px] text-slate-400 font-medium">{r.type} File</span>
+                                                                    </div>
+                                                                    <div className="opacity-0 group-hover/res:opacity-100 text-slate-400">
+                                                                        <ChevronDown size={14} className="-rotate-90" />
+                                                                    </div>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Notes */}
+                                                    <div>
+                                                        <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1">
+                                                            <FileText size={12} /> Teacher's Notes
+                                                        </h5>
+                                                        <div className="text-sm text-slate-600 bg-yellow-50/50 p-4 rounded-xl border border-yellow-100/50 leading-relaxed font-medium relative">
+                                                            <div className="absolute top-0 left-0 w-1 h-full bg-yellow-300 rounded-l-xl opacity-50"></div>
+                                                            {l.notes}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="flex gap-2 mt-6">
+                                                    <button className="flex-1 py-2.5 bg-indigo-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-200 active:scale-95 transition-all">
+                                                        Start Lesson
+                                                    </button>
+                                                    <button className="px-4 py-2.5 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-50 transition-colors">
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         {/* Quick Actions */}
