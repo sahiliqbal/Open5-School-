@@ -15,8 +15,8 @@ export const RoleSelection: React.FC<RoleSelectionProps> = ({ onSelectRole }) =>
                     <CactusLogo size={64} />
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight leading-none flex items-center">
-                            <span className="text-[#F97316]">Open</span>
-                            <span className="text-[#DC2626]">5</span>
+                            <span className="text-[#16a34a]">Open</span>
+                            <span className="text-[#ef4444]">5</span>
                         </h1>
                         <p className="text-xs text-slate-400 font-medium tracking-wide uppercase">EduSphere ERP System</p>
                     </div>
@@ -27,9 +27,9 @@ export const RoleSelection: React.FC<RoleSelectionProps> = ({ onSelectRole }) =>
             </div>
 
             {/* Background Decorations */}
-            <div className="absolute top-[-10%] right-[-20%] w-80 h-80 bg-cyan-100/50 rounded-full blur-3xl opacity-60 mix-blend-multiply"></div>
-            <div className="absolute bottom-[-10%] left-[-20%] w-80 h-80 bg-orange-100/50 rounded-full blur-3xl opacity-60 mix-blend-multiply"></div>
-            <div className="absolute top-[40%] left-[50%] w-60 h-60 bg-emerald-100/30 rounded-full blur-3xl opacity-50 mix-blend-multiply"></div>
+            <div className="absolute top-[-10%] right-[-20%] w-80 h-80 bg-green-100/50 rounded-full blur-3xl opacity-60 mix-blend-multiply"></div>
+            <div className="absolute bottom-[-10%] left-[-20%] w-80 h-80 bg-red-100/50 rounded-full blur-3xl opacity-60 mix-blend-multiply"></div>
+            <div className="absolute top-[40%] left-[50%] w-60 h-60 bg-lime-100/30 rounded-full blur-3xl opacity-50 mix-blend-multiply"></div>
 
             <div className="space-y-5 z-10 flex-1 flex flex-col justify-center pb-12">
                 
@@ -95,7 +95,7 @@ export const RoleSelection: React.FC<RoleSelectionProps> = ({ onSelectRole }) =>
             </div>
             
             <div className="text-center pb-4">
-                <p className="text-[10px] text-slate-400 font-medium">Open5 v3.0 • Powered by Gemini AI</p>
+                <p className="text-[10px] text-slate-400 font-medium">Open5 v3.1 • Powered by Gemini AI</p>
             </div>
         </div>
     );
