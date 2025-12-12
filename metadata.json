@@ -1,6 +1,6 @@
 {
-  "name": "Open5 School ",
-  "description": "A modern, AI-powered student learning ERP featuring course management, syllabus tracking, and an integrated Gemini AI Tutor for real-time homework assistance.",
+  "name": "Open5 School",
+  "description": "Next-gen school ERP featuring AI-powered tutoring, real-time bus tracking, and seamless academic management.",
   "requestFramePermissions": [
     "geolocation"
   ]
