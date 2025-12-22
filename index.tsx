@@ -1,4 +1,5 @@
-import React, { ErrorInfo, ReactNode } from 'react';
+// Added Component to named imports and updated ErrorBoundary to use it for cleaner inheritance
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { AlertTriangle, RefreshCcw, Flag, CheckCircle } from 'lucide-react';
@@ -13,12 +14,16 @@ interface ErrorBoundaryState {
   isReported: boolean;
 }
 
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  public state: ErrorBoundaryState = { 
-    hasError: false, 
-    error: null, 
-    isReported: false 
-  };
+// Fixed "Property 'setState' does not exist" and "Property 'props' does not exist" errors by explicitly extending Component and using constructor
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { 
+      hasError: false, 
+      error: null, 
+      isReported: false 
+    };
+  }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error, isReported: false };

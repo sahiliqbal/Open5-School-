@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LogOut, Bell, Home, PieChart, Users, Calendar, Package, Plus, UserCog, MessageSquare, BookOpen, Search, Filter, Ban, CheckCircle, Activity, Award, Mail, Phone, X, AlertTriangle } from 'lucide-react';
+import { LogOut, Bell, Home, PieChart, Users, Calendar, Package, Plus, UserCog, MessageSquare, BookOpen, Search, Filter, Ban, CheckCircle, Activity, Award, Mail, Phone, X, AlertTriangle, Clock } from 'lucide-react';
 import { MOCK_COURSES } from '../constants';
 
 interface AdminDashboardProps {
@@ -7,6 +7,11 @@ interface AdminDashboardProps {
 }
 
 type Tab = 'DASHBOARD' | 'COURSES' | 'FINANCE' | 'EXAMS' | 'STUDENTS' | 'INVENTORY';
+
+interface AttendanceRecord {
+    date: string;
+    status: 'PRESENT' | 'ABSENT' | 'LATE';
+}
 
 interface StudentProfile {
     id: string;
@@ -21,14 +26,116 @@ interface StudentProfile {
     avatarSeed: string;
     phone: string;
     enrollmentDate: string;
+    attendanceHistory: AttendanceRecord[];
 }
 
 const MOCK_STUDENTS_DATA: StudentProfile[] = [
-    { id: '1', name: 'Alex Johnson', rollNo: '2451', email: 'alex.j@school.edu', grade: '12', section: 'A', status: 'ACTIVE', gpa: 3.8, attendance: 95, avatarSeed: 'Alex', phone: '+1 234 567 890', enrollmentDate: 'Aug 15, 2021' },
-    { id: '2', name: 'Sam Smith', rollNo: '2452', email: 'sam.s@school.edu', grade: '11', section: 'B', status: 'SUSPENDED', gpa: 2.4, attendance: 60, avatarSeed: 'Sam', phone: '+1 987 654 321', enrollmentDate: 'Aug 20, 2022' },
-    { id: '3', name: 'Jordan Lee', rollNo: '2453', email: 'jordan.l@school.edu', grade: '10', section: 'A', status: 'ACTIVE', gpa: 3.9, attendance: 98, avatarSeed: 'Jordan', phone: '+1 555 123 456', enrollmentDate: 'Sep 01, 2023' },
-    { id: '4', name: 'Casey West', rollNo: '2454', email: 'casey.w@school.edu', grade: '12', section: 'C', status: 'ACTIVE', gpa: 3.2, attendance: 88, avatarSeed: 'Casey', phone: '+1 444 777 888', enrollmentDate: 'Aug 15, 2021' },
-    { id: '5', name: 'Taylor Swift', rollNo: '2455', email: 'taylor.s@school.edu', grade: '12', section: 'A', status: 'ALUMNI', gpa: 4.0, attendance: 100, avatarSeed: 'Taylor', phone: '+1 222 333 444', enrollmentDate: 'Aug 10, 2020' },
+    { 
+        id: '1', 
+        name: 'Alex Johnson', 
+        rollNo: '2451', 
+        email: 'alex.j@school.edu', 
+        grade: '12', 
+        section: 'A', 
+        status: 'ACTIVE', 
+        gpa: 3.8, 
+        attendance: 95, 
+        avatarSeed: 'Alex', 
+        phone: '+1 234 567 890', 
+        enrollmentDate: 'Aug 15, 2021',
+        attendanceHistory: [
+            { date: '2024-02-26', status: 'PRESENT' },
+            { date: '2024-02-23', status: 'PRESENT' },
+            { date: '2024-02-22', status: 'PRESENT' },
+            { date: '2024-02-21', status: 'LATE' },
+            { date: '2024-02-20', status: 'PRESENT' },
+            { date: '2024-02-19', status: 'PRESENT' },
+        ]
+    },
+    { 
+        id: '2', 
+        name: 'Sam Smith', 
+        rollNo: '2452', 
+        email: 'sam.s@school.edu', 
+        grade: '11', 
+        section: 'B', 
+        status: 'SUSPENDED', 
+        gpa: 2.4, 
+        attendance: 60, 
+        avatarSeed: 'Sam', 
+        phone: '+1 987 654 321', 
+        enrollmentDate: 'Aug 20, 2022',
+        attendanceHistory: [
+            { date: '2024-02-26', status: 'ABSENT' },
+            { date: '2024-02-23', status: 'ABSENT' },
+            { date: '2024-02-22', status: 'LATE' },
+            { date: '2024-02-21', status: 'ABSENT' },
+            { date: '2024-02-20', status: 'PRESENT' },
+        ]
+    },
+    { 
+        id: '3', 
+        name: 'Jordan Lee', 
+        rollNo: '2453', 
+        email: 'jordan.l@school.edu', 
+        grade: '10', 
+        section: 'A', 
+        status: 'ACTIVE', 
+        gpa: 3.9, 
+        attendance: 98, 
+        avatarSeed: 'Jordan', 
+        phone: '+1 555 123 456', 
+        enrollmentDate: 'Sep 01, 2023',
+        attendanceHistory: [
+            { date: '2024-02-26', status: 'PRESENT' },
+            { date: '2024-02-23', status: 'PRESENT' },
+            { date: '2024-02-22', status: 'PRESENT' },
+            { date: '2024-02-21', status: 'PRESENT' },
+            { date: '2024-02-20', status: 'PRESENT' },
+        ]
+    },
+    { 
+        id: '4', 
+        name: 'Casey West', 
+        rollNo: '2454', 
+        email: 'casey.w@school.edu', 
+        grade: '12', 
+        section: 'C', 
+        status: 'ACTIVE', 
+        gpa: 3.2, 
+        attendance: 88, 
+        avatarSeed: 'Casey', 
+        phone: '+1 444 777 888', 
+        enrollmentDate: 'Aug 15, 2021',
+        attendanceHistory: [
+            { date: '2024-02-26', status: 'PRESENT' },
+            { date: '2024-02-23', status: 'LATE' },
+            { date: '2024-02-22', status: 'PRESENT' },
+            { date: '2024-02-21', status: 'PRESENT' },
+            { date: '2024-02-20', status: 'ABSENT' },
+        ]
+    },
+    { 
+        id: '5', 
+        name: 'Taylor Swift', 
+        rollNo: '2455', 
+        email: 'taylor.s@school.edu', 
+        grade: '12', 
+        section: 'A', 
+        status: 'ALUMNI', 
+        gpa: 4.0, 
+        attendance: 100, 
+        avatarSeed: 'Taylor', 
+        phone: '+1 222 333 444', 
+        enrollmentDate: 'Aug 10, 2020',
+        attendanceHistory: [
+            { date: '2024-02-26', status: 'PRESENT' },
+            { date: '2024-02-23', status: 'PRESENT' },
+            { date: '2024-02-22', status: 'PRESENT' },
+            { date: '2024-02-21', status: 'PRESENT' },
+            { date: '2024-02-20', status: 'PRESENT' },
+        ]
+    },
 ];
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
@@ -227,6 +334,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         }
     };
 
+    const getStatusStyles = (status: AttendanceRecord['status']) => {
+        switch (status) {
+            case 'PRESENT': return { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100', icon: <CheckCircle size={14} /> };
+            case 'ABSENT': return { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-100', icon: <X size={14} /> };
+            case 'LATE': return { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100', icon: <Clock size={14} /> };
+        }
+    };
+
     return (
         <div className="h-full flex flex-col bg-slate-50 relative">
             <div className="px-6 py-6 bg-white border-b border-slate-100 z-10 shrink-0">
@@ -326,6 +441,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                                         </div>
                                         <p className="text-2xl font-bold text-slate-900">{selectedStudent.attendance}%</p>
                                         <p className="text-[10px] text-slate-400 font-medium">Year to date</p>
+                                    </div>
+                                </div>
+
+                                {/* Detailed Attendance History */}
+                                <div className="mb-8">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wide">Recent Attendance</h4>
+                                        <button className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">View Full Log</button>
+                                    </div>
+                                    <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden divide-y divide-slate-50">
+                                        {selectedStudent.attendanceHistory.map((record, index) => {
+                                            const styles = getStatusStyles(record.status);
+                                            return (
+                                                <div key={index} className="p-4 flex justify-between items-center hover:bg-slate-50 transition-colors">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-8 h-8 rounded-full ${styles.bg} ${styles.text} flex items-center justify-center`}>
+                                                            {styles.icon}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-semibold text-slate-700">
+                                                                {new Date(record.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${styles.bg} ${styles.text} ${styles.border}`}>
+                                                        {record.status}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
