@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 
 const getClient = () => {
@@ -22,7 +23,8 @@ export const getTutorResponse = async (
 
         const systemInstruction = customSystemInstruction || defaultSystemInstruction;
 
-        const model = "gemini-2.5-flash";
+        // Use gemini-3-flash-preview for basic text tasks (Q&A/Tutor) as per instructions
+        const model = 'gemini-3-flash-preview';
 
         // Create a chat session with the configured system instruction
         const chat = ai.chats.create({
@@ -36,6 +38,7 @@ export const getTutorResponse = async (
             }))
         });
 
+        // Use response.text property to extract output from chat.sendMessage
         const response: GenerateContentResponse = await chat.sendMessage({
              message: query 
         });
@@ -74,15 +77,17 @@ export const getTrafficInsight = async (location: string, lat?: number, lng?: nu
             };
         }
 
+        // Maps grounding is only supported in Gemini 2.5 series models as per guidelines
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: `What are the current traffic conditions around ${location}? Provide a very concise summary (max 2 sentences) suitable for a school bus tracker.`,
             config: requestConfig
         });
         
+        // response.text property directly returns the extracted string output
         const text = response.text || "Traffic info unavailable.";
         
-        // Extract Grounding URI from groundingChunks if available
+        // Extract Grounding URLs from groundingChunks if available as per maps grounding requirements
         let mapUri: string | undefined;
         let sourceTitle: string | undefined;
 
@@ -90,15 +95,16 @@ export const getTrafficInsight = async (location: string, lat?: number, lng?: nu
         if (chunks && chunks.length > 0) {
             // Iterate to find a valid web uri or maps uri
             for (const chunk of chunks) {
-                // Check specifically for maps provider or web provider that has a URI
+                // Check for maps provider specifically for maps grounding
+                if ((chunk as any).maps?.uri) {
+                    mapUri = (chunk as any).maps.uri;
+                    sourceTitle = (chunk as any).maps.title || "Google Maps";
+                    break;
+                }
+                // Check for general web results if maps specific info is nested in web chunks
                 if (chunk.web?.uri) {
                     mapUri = chunk.web.uri;
                     sourceTitle = chunk.web.title;
-                    break;
-                }
-                // Sometimes maps data is structured differently, check for any valid URI
-                if ((chunk as any).maps?.uri) {
-                    mapUri = (chunk as any).maps.uri;
                     break;
                 }
             }

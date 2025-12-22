@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CactusLogo } from './CactusLogo';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, ChevronLeft, Backpack, Fingerprint, ScanFace, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ChevronLeft, Backpack, Fingerprint, ScanFace, ShieldCheck, AlertCircle } from 'lucide-react';
 
 interface LoginProps {
     onSuccess: () => void;
@@ -14,32 +14,55 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingType, setLoadingType] = useState<'generic' | 'student' | 'biometric' | null>(null);
+    const [error, setError] = useState<string | null>(null);
     const [isBiometricSupported, setIsBiometricSupported] = useState(false);
     const [biometricType, setBiometricType] = useState<'face' | 'touch'>('touch');
 
     // Check for Biometric Support (WebAuthn)
     useEffect(() => {
-        // Safe check for PublicKeyCredential which might not be in all TS env definitions
         if (typeof window !== 'undefined' && (window as any).PublicKeyCredential) {
             setIsBiometricSupported(true);
-            // Simulate detecting Face ID vs Touch ID for UI variety
             setBiometricType(Math.random() > 0.5 ? 'face' : 'touch');
         }
     }, []);
 
+    // Clear error when user starts typing
+    useEffect(() => {
+        if (error) setError(null);
+    }, [email, password]);
+
     const authenticate = (callback: () => void, type: 'generic' | 'student' | 'biometric') => {
         setIsLoading(true);
         setLoadingType(type);
+        setError(null);
+
         // Simulate network/auth delay
         setTimeout(() => {
             setIsLoading(false);
             setLoadingType(null);
+
+            // Mock Logic for Error Simulation
+            if (type === 'generic') {
+                if (email === 'suspended@school.edu') {
+                    setError('This account has been suspended by the administrator.');
+                    return;
+                }
+                if (email === 'error@school.edu' || password !== 'admin123' && email !== '') {
+                    setError('Invalid credentials. Please check your email and password.');
+                    return;
+                }
+            }
+
             callback();
         }, 1500);
     };
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!email || !password) {
+            setError('Please enter both email and password.');
+            return;
+        }
         authenticate(onSuccess, 'generic');
     };
 
@@ -62,13 +85,26 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
             </div>
 
             <div className="flex-1 px-8 flex flex-col overflow-y-auto no-scrollbar pb-8">
-                <div className="mt-4 mb-10 text-center">
+                <div className="mt-4 mb-8 text-center">
                     <div className="inline-flex justify-center mb-6 p-4 bg-white rounded-[28px] shadow-lg shadow-indigo-100">
                         <CactusLogo size={48} />
                     </div>
                     <h1 className="text-3xl font-bold text-slate-900 mb-2 tracking-tight">Welcome Back</h1>
                     <p className="text-slate-500 font-medium text-sm">Enter your credentials to access the portal.</p>
                 </div>
+
+                {/* Dynamic Error Message */}
+                {error && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="mt-0.5 text-red-500">
+                            <AlertCircle size={18} />
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-sm font-bold text-red-800 leading-tight">Authentication Failed</p>
+                            <p className="text-xs font-medium text-red-600/80 mt-1 leading-relaxed">{error}</p>
+                        </div>
+                    </div>
+                )}
 
                 <form onSubmit={handleLogin} className="space-y-6">
                     <div className="space-y-4">
@@ -84,7 +120,9 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="name@school.edu"
-                                    className="w-full bg-white border border-slate-200 rounded-[24px] py-4 pl-14 pr-4 text-slate-800 font-semibold placeholder:text-slate-300 focus:outline-none focus:border-indigo-600 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm"
+                                    className={`w-full bg-white border rounded-[24px] py-4 pl-14 pr-4 text-slate-800 font-semibold placeholder:text-slate-300 focus:outline-none focus:ring-4 transition-all shadow-sm ${
+                                        error ? 'border-red-200 focus:border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-600 focus:ring-indigo-100'
+                                    }`}
                                 />
                             </div>
                         </div>
@@ -101,7 +139,9 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    className="w-full bg-white border border-slate-200 rounded-[24px] py-4 pl-14 pr-14 text-slate-800 font-semibold placeholder:text-slate-300 focus:outline-none focus:border-indigo-600 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm"
+                                    className={`w-full bg-white border rounded-[24px] py-4 pl-14 pr-14 text-slate-800 font-semibold placeholder:text-slate-300 focus:outline-none focus:ring-4 transition-all shadow-sm ${
+                                        error ? 'border-red-200 focus:border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-600 focus:ring-indigo-100'
+                                    }`}
                                 />
                                 <button 
                                     type="button"
@@ -114,7 +154,11 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
                         </div>
                     </div>
 
-                    <div className="flex justify-end">
+                    <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                            <input type="checkbox" id="remember" className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                            <label htmlFor="remember" className="text-xs font-bold text-slate-400">Remember me</label>
+                        </div>
                         <button type="button" className="text-xs font-bold text-indigo-600 hover:text-indigo-700">
                             Forgot Password?
                         </button>
@@ -124,13 +168,16 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
                         <button 
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-slate-900 text-white font-bold text-lg py-4 rounded-[24px] shadow-lg shadow-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
+                            className={`w-full text-white font-bold text-lg py-4 rounded-[24px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 group ${
+                                error ? 'bg-red-500 shadow-red-100 hover:bg-red-600' : 'bg-slate-900 shadow-slate-200 hover:bg-black'
+                            }`}
                         >
                             {loadingType === 'generic' ? (
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             ) : (
                                 <>
-                                    Sign In <ArrowRight size={20} className="text-slate-400 group-hover:text-white transition-colors" />
+                                    {error ? 'Try Again' : 'Sign In'} 
+                                    <ArrowRight size={20} className="text-slate-400 group-hover:text-white transition-colors" />
                                 </>
                             )}
                         </button>
@@ -184,7 +231,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
 
                 <div className="mt-auto pt-8 flex items-center justify-center gap-2 text-xs font-medium text-slate-400">
                     <ShieldCheck size={14} />
-                    <span>Secure Enrollment System</span>
+                    <span>Secure Enrollment System • Open5 v3.1</span>
                 </div>
             </div>
         </div>
