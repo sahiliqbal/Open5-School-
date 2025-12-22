@@ -1,6 +1,6 @@
 
-// Use React.Component explicitly and call super(props) in constructor to fix property missing errors
-import React, { ErrorInfo, ReactNode } from 'react';
+// Use Component from react and call super(props) in constructor to fix property missing errors
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { AlertTriangle, RefreshCcw, Flag, CheckCircle } from 'lucide-react';
@@ -15,11 +15,12 @@ interface ErrorBoundaryState {
   isReported: boolean;
 }
 
-// Fixed "Property 'setState' does not exist" and "Property 'props' does not exist" errors by using React.Component and constructor initialization
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+// Fixed "Property 'setState' does not exist" and "Property 'props' does not exist" errors 
+// by explicitly importing Component and correctly extending it with generic props and state types.
+// This ensures the TypeScript compiler correctly identifies inherited methods and properties.
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    // Explicitly initialize state in the constructor to ensure it's correctly linked to the base class
     this.state = { 
       hasError: false, 
       error: null, 
@@ -38,9 +39,8 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   handleReport = () => {
     // Mock reporting logic
     console.log("User reported error:", this.state.error);
-    // Added fix: setState is now correctly inherited from React.Component
+    // setState is correctly inherited from Component
     this.setState({ isReported: true });
-    // In a production app, this would send the error to a service like Sentry
   };
 
   handleReload = () => {
@@ -107,7 +107,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       );
     }
 
-    // Added fix: props is now correctly inherited from React.Component
+    // props and state are correctly inherited from Component
     return this.props.children;
   }
 }

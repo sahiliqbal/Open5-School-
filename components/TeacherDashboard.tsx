@@ -3,7 +3,7 @@ import {
     LogOut, Bell, Calendar, BookOpen, Users, Clock, 
     MapPin, CheckSquare, Plus, ChevronDown, ChevronUp, 
     FileText, Video, Link as LinkIcon, CheckCircle2, 
-    MoreHorizontal, Download, Play, ExternalLink 
+    MoreHorizontal, Download, Play, ExternalLink, X, Save
 } from 'lucide-react';
 
 interface TeacherDashboardProps {
@@ -73,18 +73,69 @@ const MOCK_LESSONS: Lesson[] = [
     },
 ];
 
+const SUBJECT_STYLES: Record<string, { icon: string; color: string }> = {
+    'Mathematics': { icon: '📐', color: 'bg-orange-100 text-orange-600' },
+    'Physics': { icon: '⚡', color: 'bg-purple-100 text-purple-600' },
+    'Chemistry': { icon: '🧪', color: 'bg-emerald-100 text-emerald-600' },
+    'Biology': { icon: '🧬', color: 'bg-blue-100 text-blue-600' },
+    'History': { icon: '📜', color: 'bg-amber-100 text-amber-600' },
+    'English': { icon: '📚', color: 'bg-pink-100 text-pink-600' },
+    'Art': { icon: '🎨', color: 'bg-rose-100 text-rose-600' },
+    'Other': { icon: '📝', color: 'bg-slate-100 text-slate-600' },
+};
+
 export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) => {
     const [activeTab, setActiveTab] = useState<TeacherTab>('PLANNER');
     const [expandedLessonId, setExpandedLessonId] = useState<string | null>(null);
     const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+    const [lessons, setLessons] = useState<Lesson[]>(MOCK_LESSONS);
     
-    const lessons = MOCK_LESSONS;
+    // Add Lesson Modal State
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [newLesson, setNewLesson] = useState({
+        subject: 'Mathematics',
+        topic: '',
+        time: '',
+        classRoom: '',
+        notes: '',
+        resourceTitle: '',
+        resourceType: 'PDF' as const
+    });
 
     const toggleCompletion = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
         setCompletedLessons(prev => 
             prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
         );
+    };
+
+    const handleSaveLesson = () => {
+        if (!newLesson.topic || !newLesson.time || !newLesson.classRoom) return;
+
+        const style = SUBJECT_STYLES[newLesson.subject] || SUBJECT_STYLES['Other'];
+        const lessonToAdd: Lesson = {
+            id: Date.now().toString(),
+            subject: newLesson.subject,
+            topic: newLesson.topic,
+            time: newLesson.time,
+            classRoom: newLesson.classRoom,
+            notes: newLesson.notes,
+            icon: style.icon,
+            color: style.color,
+            resources: newLesson.resourceTitle ? [{ title: newLesson.resourceTitle, type: newLesson.resourceType }] : []
+        };
+
+        setLessons(prev => [lessonToAdd, ...prev]);
+        setIsAddModalOpen(false);
+        setNewLesson({
+            subject: 'Mathematics',
+            topic: '',
+            time: '',
+            classRoom: '',
+            notes: '',
+            resourceTitle: '',
+            resourceType: 'PDF'
+        });
     };
 
     const renderResourceIcon = (type: string) => {
@@ -162,41 +213,45 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
                                             <div className="mt-6 pt-6 border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-300">
                                                 <div className="space-y-6">
                                                     {/* Resources */}
-                                                    <div>
-                                                        <div className="flex justify-between items-center mb-3">
-                                                            <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                                                <LinkIcon size={12} /> Resources ({l.resources.length})
-                                                            </h5>
-                                                            <button className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md hover:bg-indigo-100 transition-colors">Add New</button>
+                                                    {l.resources.length > 0 && (
+                                                        <div>
+                                                            <div className="flex justify-between items-center mb-3">
+                                                                <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                                                    <LinkIcon size={12} /> Resources ({l.resources.length})
+                                                                </h5>
+                                                                <button className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md hover:bg-indigo-100 transition-colors">Add New</button>
+                                                            </div>
+                                                            <div className="grid grid-cols-1 gap-2">
+                                                                {l.resources.map((r, idx) => (
+                                                                    <button key={idx} className="w-full flex items-center gap-3 p-3 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-all group/res text-left border border-slate-50 hover:border-slate-200">
+                                                                        <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-100 group-hover/res:scale-110 transition-transform">
+                                                                            {renderResourceIcon(r.type)}
+                                                                        </div>
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <span className="text-xs font-bold text-slate-700 block truncate">{r.title}</span>
+                                                                            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">{r.type}</span>
+                                                                        </div>
+                                                                        <div className="w-7 h-7 bg-white rounded-full flex items-center justify-center text-slate-400 group-hover/res:text-indigo-600 shadow-sm border border-slate-100">
+                                                                            {getActionIcon(r.type)}
+                                                                        </div>
+                                                                    </button>
+                                                                ))}
+                                                            </div>
                                                         </div>
-                                                        <div className="grid grid-cols-1 gap-2">
-                                                            {l.resources.map((r, idx) => (
-                                                                <button key={idx} className="w-full flex items-center gap-3 p-3 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-all group/res text-left border border-slate-50 hover:border-slate-200">
-                                                                    <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-100 group-hover/res:scale-110 transition-transform">
-                                                                        {renderResourceIcon(r.type)}
-                                                                    </div>
-                                                                    <div className="flex-1 min-w-0">
-                                                                        <span className="text-xs font-bold text-slate-700 block truncate">{r.title}</span>
-                                                                        <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">{r.type}</span>
-                                                                    </div>
-                                                                    <div className="w-7 h-7 bg-white rounded-full flex items-center justify-center text-slate-400 group-hover/res:text-indigo-600 shadow-sm border border-slate-100">
-                                                                        {getActionIcon(r.type)}
-                                                                    </div>
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
+                                                    )}
 
                                                     {/* Notes */}
-                                                    <div>
-                                                        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                                                            <FileText size={12} /> Planner Notes
-                                                        </h5>
-                                                        <div className="text-xs text-slate-600 bg-amber-50/50 p-4 rounded-2xl border border-amber-100/30 leading-relaxed font-medium relative italic">
-                                                            <div className="absolute top-0 left-0 w-1 h-full bg-amber-200 rounded-l-2xl"></div>
-                                                            "{l.notes}"
+                                                    {l.notes && (
+                                                        <div>
+                                                            <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                                                                <FileText size={12} /> Planner Notes
+                                                            </h5>
+                                                            <div className="text-xs text-slate-600 bg-amber-50/50 p-4 rounded-2xl border border-amber-100/30 leading-relaxed font-medium relative italic">
+                                                                <div className="absolute top-0 left-0 w-1 h-full bg-amber-200 rounded-l-2xl"></div>
+                                                                "{l.notes}"
+                                                            </div>
                                                         </div>
-                                                    </div>
+                                                    )}
                                                 </div>
                                                 
                                                 <div className="flex gap-3 mt-8">
@@ -228,7 +283,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
                                 <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
                                     <div 
                                         className="h-full bg-emerald-500 transition-all duration-1000 ease-out"
-                                        style={{ width: `${(completedLessons.length / lessons.length) * 100}%` }}
+                                        style={{ width: `${(completedLessons.length / (lessons.length || 1)) * 100}%` }}
                                     ></div>
                                 </div>
                                 <span className="text-xs font-black text-slate-900">{completedLessons.length}/{lessons.length} Done</span>
@@ -312,9 +367,138 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
 
             {/* Floating Action Button */}
             {activeTab === 'PLANNER' && (
-                <button className="absolute bottom-28 right-6 w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-slate-300 active:scale-90 transition-transform z-30 group">
+                <button 
+                    onClick={() => setIsAddModalOpen(true)}
+                    className="absolute bottom-28 right-6 w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-slate-300 active:scale-90 transition-transform z-30 group"
+                >
                     <Plus size={28} className="group-hover:rotate-90 transition-transform duration-300" />
                 </button>
+            )}
+
+            {/* Add New Lesson Modal */}
+            {isAddModalOpen && (
+                <div className="absolute inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center animate-in fade-in duration-300">
+                    <div className="bg-white w-full h-[90%] sm:h-auto sm:max-h-[80%] rounded-t-[40px] sm:rounded-[32px] shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-500 mx-0 sm:mx-6">
+                        
+                        {/* Modal Header */}
+                        <div className="px-8 pt-8 pb-4 flex justify-between items-center shrink-0">
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">New Lesson</h2>
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Daily Planner</p>
+                            </div>
+                            <button 
+                                onClick={() => setIsAddModalOpen(false)}
+                                className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-6 no-scrollbar pt-2">
+                            {/* Subject Picker */}
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Subject</label>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {Object.keys(SUBJECT_STYLES).map(subj => (
+                                        <button 
+                                            key={subj}
+                                            onClick={() => setNewLesson({...newLesson, subject: subj})}
+                                            className={`flex flex-col items-center justify-center p-3 rounded-2xl border transition-all ${
+                                                newLesson.subject === subj 
+                                                ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100 scale-105' 
+                                                : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200'
+                                            }`}
+                                        >
+                                            <span className="text-xl mb-1">{SUBJECT_STYLES[subj].icon}</span>
+                                            <span className="text-[8px] font-black uppercase truncate w-full text-center">{subj}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Form Fields */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Topic Name</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="e.g. Calculus"
+                                        value={newLesson.topic}
+                                        onChange={e => setNewLesson({...newLesson, topic: e.target.value})}
+                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-3.5 px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Time</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="08:30 AM"
+                                        value={newLesson.time}
+                                        onChange={e => setNewLesson({...newLesson, time: e.target.value})}
+                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-3.5 px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Classroom / Lab</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="Room 302"
+                                    value={newLesson.classRoom}
+                                    onChange={e => setNewLesson({...newLesson, classRoom: e.target.value})}
+                                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-3.5 px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Additional Notes</label>
+                                <textarea 
+                                    rows={3}
+                                    placeholder="Write any reminders here..."
+                                    value={newLesson.notes}
+                                    onChange={e => setNewLesson({...newLesson, notes: e.target.value})}
+                                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-3.5 px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none"
+                                />
+                            </div>
+
+                            {/* Initial Resource */}
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Initial Resource (Optional)</label>
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        placeholder="Document title..."
+                                        value={newLesson.resourceTitle}
+                                        onChange={e => setNewLesson({...newLesson, resourceTitle: e.target.value})}
+                                        className="flex-1 bg-slate-50 border border-slate-100 rounded-2xl py-3.5 px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                    />
+                                    <select 
+                                        value={newLesson.resourceType}
+                                        onChange={e => setNewLesson({...newLesson, resourceType: e.target.value as any})}
+                                        className="bg-white border border-slate-100 rounded-2xl px-3 text-xs font-bold focus:outline-none"
+                                    >
+                                        <option value="PDF">PDF</option>
+                                        <option value="VIDEO">Video</option>
+                                        <option value="LINK">Link</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-8 bg-white border-t border-slate-50 shrink-0">
+                            <button 
+                                onClick={handleSaveLesson}
+                                className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                            >
+                                <Save size={20} />
+                                Create Lesson
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
