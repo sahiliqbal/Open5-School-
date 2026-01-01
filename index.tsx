@@ -1,6 +1,6 @@
 
 // Use Component and ErrorInfo from react
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { ErrorInfo, ReactNode } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { AlertTriangle, RefreshCcw, Flag, CheckCircle } from 'lucide-react';
@@ -16,8 +16,8 @@ interface ErrorBoundaryState {
 }
 
 // ErrorBoundary class component to catch rendering errors.
-// Inheriting from Component<Props, State> automatically provides setState, this.props, and this.state.
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+// Fix: Inheriting from React.Component explicitly ensures TypeScript recognizes instance methods and properties like setState and props.
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   // Initialize state using class field syntax, which is the standard approach in modern React with TypeScript
   state: ErrorBoundaryState = { 
     hasError: false, 
@@ -33,9 +33,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     console.error("Uncaught error:", error, errorInfo);
   }
 
-  // Use arrow function to maintain 'this' context; setState is inherited from Component.
+  // Use arrow function to maintain 'this' context; setState is inherited from React.Component.
   handleReport = () => {
     console.log("User reported error:", this.state.error);
+    // Fix: setState is a property of React.Component
     this.setState({ isReported: true });
   };
 
@@ -103,6 +104,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       );
     }
 
+    // Fix: this.props.children is accessible because ErrorBoundary extends React.Component
     return this.props.children;
   }
 }

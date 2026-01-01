@@ -5,7 +5,7 @@ import {
     FileText, Video, Link as LinkIcon, CheckCircle2, 
     MoreHorizontal, Download, Play, ExternalLink, X, Save,
     ClipboardCheck, AlertCircle, Search, Filter, ArrowRight,
-    Sparkles, Check
+    Sparkles, Check, GraduationCap, MessageSquare, Trash2
 } from 'lucide-react';
 
 interface TeacherDashboardProps {
@@ -36,10 +36,13 @@ interface Submission {
     studentName: string;
     subject: string;
     assignment: string;
-    submittedAt: string;
+    submittedAt: string; // Relative time
+    fullTimestamp: string; // Exact date and time
     status: 'PENDING' | 'GRADED';
+    grade?: string;
     isNew: boolean;
     avatarSeed: string;
+    content?: string;
 }
 
 const MOCK_LESSONS: Lesson[] = [
@@ -98,8 +101,30 @@ const SUBJECT_STYLES: Record<string, { icon: string; color: string; border: stri
 };
 
 const INITIAL_SUBMISSIONS: Submission[] = [
-    { id: 's1', studentName: 'Alice Johnson', subject: 'Mathematics', assignment: 'Calculus Quiz 1', submittedAt: '2h ago', status: 'PENDING', isNew: false, avatarSeed: 'Alice' },
-    { id: 's2', studentName: 'Bob Smith', subject: 'Physics', assignment: 'Lab Report: Light', submittedAt: '5h ago', status: 'PENDING', isNew: false, avatarSeed: 'Bob' },
+    { 
+        id: 's1', 
+        studentName: 'Alice Johnson', 
+        subject: 'Mathematics', 
+        assignment: 'Calculus Quiz 1', 
+        submittedAt: '2h ago', 
+        fullTimestamp: 'Oct 24, 2024 • 09:15 AM',
+        status: 'PENDING', 
+        isNew: false, 
+        avatarSeed: 'Alice',
+        content: 'I found the section on limits quite challenging, but I hope my derivation for the power rule is correct.'
+    },
+    { 
+        id: 's2', 
+        studentName: 'Bob Smith', 
+        subject: 'Physics', 
+        assignment: 'Lab Report: Light', 
+        submittedAt: '5h ago', 
+        fullTimestamp: 'Oct 24, 2024 • 06:30 AM',
+        status: 'PENDING', 
+        isNew: false, 
+        avatarSeed: 'Bob',
+        content: 'Observation notes attached. The refraction index measured was slightly higher than expected due to ambient temperature.'
+    },
 ];
 
 export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) => {
@@ -111,6 +136,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
     const [newSubCount, setNewSubCount] = useState(0);
     const [toast, setToast] = useState<string | null>(null);
     
+    // Selection for Grading
+    const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+    const [gradingInput, setGradingInput] = useState({ grade: '', feedback: '' });
+
     // Add Lesson Modal State
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [newLesson, setNewLesson] = useState({
@@ -126,15 +155,18 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
     // Notification Effect
     useEffect(() => {
         const timer = setTimeout(() => {
+            const now = new Date();
             const newSub: Submission = {
                 id: 's' + Date.now(),
                 studentName: 'Charlie Brown',
                 subject: 'Chemistry',
                 assignment: 'Molecule Analysis',
                 submittedAt: 'Just now',
+                fullTimestamp: now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' • ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
                 status: 'PENDING',
                 isNew: true,
-                avatarSeed: 'Charlie'
+                avatarSeed: 'Charlie',
+                content: 'Submitted the 3D model link as well in the comments.'
             };
             setSubmissions(prev => [newSub, ...prev]);
             setNewSubCount(prev => prev + 1);
@@ -200,6 +232,20 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
             resourceTitle: '',
             resourceType: 'PDF'
         });
+    };
+
+    const handleGradeSubmission = () => {
+        if (!selectedSubmission || !gradingInput.grade) return;
+
+        setSubmissions(prev => prev.map(s => 
+            s.id === selectedSubmission.id 
+                ? { ...s, status: 'GRADED', grade: gradingInput.grade } 
+                : s
+        ));
+        
+        showToast(`Grade submitted for ${selectedSubmission.studentName}`);
+        setSelectedSubmission(null);
+        setGradingInput({ grade: '', feedback: '' });
     };
 
     const renderResourceIcon = (type: string) => {
@@ -363,7 +409,11 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
                         </div>
                         <div className="space-y-3">
                             {submissions.map((sub) => (
-                                <div key={sub.id} className={`bg-white p-4 rounded-[28px] border transition-all hover:shadow-md cursor-pointer group ${sub.isNew ? 'border-indigo-100 ring-2 ring-indigo-500/5' : 'border-slate-100'}`}>
+                                <div 
+                                    key={sub.id} 
+                                    onClick={() => setSelectedSubmission(sub)}
+                                    className={`bg-white p-4 rounded-[28px] border transition-all hover:shadow-md cursor-pointer group ${sub.isNew ? 'border-indigo-100 ring-2 ring-indigo-500/5' : 'border-slate-100'}`}
+                                >
                                     <div className="flex items-center gap-4">
                                         <div className="relative shrink-0">
                                             <div className="w-14 h-14 bg-slate-100 rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
@@ -377,7 +427,12 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
                                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter shrink-0">{sub.submittedAt}</span>
                                             </div>
                                             <p className="text-xs font-bold text-indigo-600 mb-0.5">{sub.assignment}</p>
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{sub.subject}</p>
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{sub.subject}</p>
+                                                {sub.status === 'GRADED' && (
+                                                    <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-widest border border-emerald-100">Grade: {sub.grade}</span>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
                                             <ArrowRight size={18} />
@@ -606,6 +661,129 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onLogout }) 
                                 <Save size={20} />
                                 Create Lesson Entry
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Grading Detail Modal */}
+            {selectedSubmission && (
+                <div className="absolute inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-end sm:items-center justify-center animate-in fade-in duration-300">
+                    <div className="bg-white w-full h-[95%] sm:h-auto sm:max-h-[90%] rounded-t-[44px] sm:rounded-[32px] shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-500 mx-0 sm:mx-6">
+                        
+                        {/* Interactive Header */}
+                        <div className="bg-slate-900 px-8 pt-10 pb-16 relative">
+                            <div className="absolute top-0 left-0 right-0 h-full bg-gradient-to-br from-indigo-600/20 to-transparent"></div>
+                            <div className="relative z-10 flex justify-between items-start">
+                                <div className="flex gap-4">
+                                    <div className="w-16 h-16 bg-white p-1 rounded-2xl shadow-2xl">
+                                        <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${selectedSubmission.avatarSeed}`} alt={selectedSubmission.studentName} className="w-full h-full bg-slate-100 rounded-xl" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-black text-white tracking-tight leading-none">{selectedSubmission.studentName}</h2>
+                                        <p className="text-indigo-200 text-xs font-bold uppercase tracking-widest mt-2">{selectedSubmission.subject} • Assignment</p>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => setSelectedSubmission(null)}
+                                    className="w-10 h-10 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-colors border border-white/10"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Submission Content Area */}
+                        <div className="flex-1 bg-[#F8F9FA] -mt-8 rounded-t-[40px] relative z-20 px-8 pt-8 pb-32 overflow-y-auto no-scrollbar">
+                            <div className="space-y-8">
+                                {/* Date and Time Box */}
+                                <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                                            <Calendar size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Submission Date</p>
+                                            <p className="text-sm font-bold text-slate-800">{selectedSubmission.fullTimestamp}</p>
+                                        </div>
+                                    </div>
+                                    <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                                        selectedSubmission.status === 'PENDING' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                                    }`}>
+                                        {selectedSubmission.status}
+                                    </div>
+                                </div>
+
+                                {/* Assignment Title */}
+                                <div>
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5 ml-1">
+                                        <GraduationCap size={14} /> Academic Task
+                                    </h3>
+                                    <div className="bg-white p-5 rounded-[28px] border border-slate-100 shadow-sm">
+                                        <p className="text-lg font-black text-slate-900">{selectedSubmission.assignment}</p>
+                                    </div>
+                                </div>
+
+                                {/* Student Comments / Content */}
+                                <div>
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5 ml-1">
+                                        <MessageSquare size={14} /> Student Message
+                                    </h3>
+                                    <div className="bg-white p-6 rounded-[28px] border border-slate-100 shadow-sm">
+                                        <p className="text-sm font-medium text-slate-600 leading-relaxed italic">
+                                            "{selectedSubmission.content || "No message provided by student."}"
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Grading Form */}
+                                <div className="space-y-6 pt-4 border-t border-slate-100">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Grade (e.g. A, 95)</label>
+                                            <input 
+                                                type="text" 
+                                                placeholder="Enter Grade"
+                                                value={gradingInput.grade}
+                                                onChange={e => setGradingInput({...gradingInput, grade: e.target.value})}
+                                                className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-600 transition-all shadow-sm"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Behavior Marks</label>
+                                            <div className="flex gap-2">
+                                                {[1, 2, 3, 4, 5].map(m => (
+                                                    <button key={m} className="flex-1 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-[10px] font-bold text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">+{m}</button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Teacher Feedback</label>
+                                        <textarea 
+                                            rows={3}
+                                            placeholder="Write your feedback for the student..."
+                                            value={gradingInput.feedback}
+                                            onChange={e => setGradingInput({...gradingInput, feedback: e.target.value})}
+                                            className="w-full bg-white border border-slate-200 rounded-[28px] p-5 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-600 transition-all resize-none shadow-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button 
+                                        onClick={handleGradeSubmission}
+                                        className="flex-1 bg-slate-900 text-white py-4 rounded-[24px] font-black text-base shadow-2xl shadow-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-3 hover:bg-black"
+                                    >
+                                        <GraduationCap size={18} />
+                                        Finalize Grade
+                                    </button>
+                                    <button className="w-14 h-14 bg-white border border-slate-200 rounded-[24px] flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors shadow-sm">
+                                        <Trash2 size={20} />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
