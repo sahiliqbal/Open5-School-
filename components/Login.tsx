@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CactusLogo } from './CactusLogo';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, ChevronLeft, Backpack, Fingerprint, ScanFace, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ChevronLeft, Backpack, Fingerprint, ScanFace, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
 
 interface LoginProps {
     onSuccess: () => void;
@@ -47,20 +47,30 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
                     setError('This account has been suspended by the administrator.');
                     return;
                 }
-                if (email === 'error@school.edu' || password !== 'admin123' && email !== '') {
+                // Simulate failure for specific credentials
+                if (email === 'error@school.edu' || (email !== '' && password === 'fail')) {
                     setError('Invalid credentials. Please check your email and password.');
+                    return;
+                }
+                // In demo mode, any non-empty password works unless it is 'fail'
+                if (email !== '' && password === '') {
+                    setError('Password cannot be empty.');
                     return;
                 }
             }
 
             callback();
-        }, 1500);
+        }, 1800);
     };
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!email || !password) {
-            setError('Please enter both email and password.');
+        if (!email) {
+            setError('Please enter your email address.');
+            return;
+        }
+        if (!password) {
+            setError('Please enter your password.');
             return;
         }
         authenticate(onSuccess, 'generic');
@@ -77,6 +87,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
                 <button 
                     onClick={onBack}
                     className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 shadow-sm active:scale-95 transition-all"
+                    disabled={isLoading}
                 >
                     <ChevronLeft size={22} />
                 </button>
@@ -120,9 +131,10 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="name@school.edu"
+                                    disabled={isLoading}
                                     className={`w-full bg-white border rounded-[24px] py-4 pl-14 pr-4 text-slate-800 font-semibold placeholder:text-slate-300 focus:outline-none focus:ring-4 transition-all shadow-sm ${
                                         error ? 'border-red-200 focus:border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-600 focus:ring-indigo-100'
-                                    }`}
+                                    } ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                                 />
                             </div>
                         </div>
@@ -139,13 +151,15 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••"
+                                    disabled={isLoading}
                                     className={`w-full bg-white border rounded-[24px] py-4 pl-14 pr-14 text-slate-800 font-semibold placeholder:text-slate-300 focus:outline-none focus:ring-4 transition-all shadow-sm ${
                                         error ? 'border-red-200 focus:border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-600 focus:ring-indigo-100'
-                                    }`}
+                                    } ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                                 />
                                 <button 
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
+                                    disabled={isLoading}
                                     className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
                                 >
                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -156,10 +170,19 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
 
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                            <input type="checkbox" id="remember" className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                            <input 
+                                type="checkbox" 
+                                id="remember" 
+                                className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" 
+                                disabled={isLoading}
+                            />
                             <label htmlFor="remember" className="text-xs font-bold text-slate-400">Remember me</label>
                         </div>
-                        <button type="button" className="text-xs font-bold text-indigo-600 hover:text-indigo-700">
+                        <button 
+                            type="button" 
+                            className="text-xs font-bold text-indigo-600 hover:text-indigo-700"
+                            disabled={isLoading}
+                        >
                             Forgot Password?
                         </button>
                     </div>
@@ -168,12 +191,15 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
                         <button 
                             type="submit"
                             disabled={isLoading}
-                            className={`w-full text-white font-bold text-lg py-4 rounded-[24px] shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 group ${
+                            className={`w-full text-white font-bold text-lg py-4 rounded-[24px] shadow-lg transition-all flex items-center justify-center gap-3 group ${
                                 error ? 'bg-red-500 shadow-red-100 hover:bg-red-600' : 'bg-slate-900 shadow-slate-200 hover:bg-black'
-                            }`}
+                            } ${isLoading ? 'opacity-80 scale-[0.98] cursor-not-allowed' : 'active:scale-[0.98]'}`}
                         >
                             {loadingType === 'generic' ? (
-                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <>
+                                    <Loader2 size={22} className="animate-spin text-white" />
+                                    <span>Signing In...</span>
+                                </>
                             ) : (
                                 <>
                                     {error ? 'Try Again' : 'Sign In'} 
@@ -187,11 +213,11 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
                                 type="button"
                                 onClick={handleBiometricLogin}
                                 disabled={isLoading}
-                                className="w-full bg-indigo-50 text-indigo-700 font-bold text-lg py-4 rounded-[24px] border border-indigo-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group hover:bg-indigo-100"
+                                className="w-full bg-indigo-50 text-indigo-700 font-bold text-lg py-4 rounded-[24px] border border-indigo-100 transition-all flex items-center justify-center gap-2 group hover:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loadingType === 'biometric' ? (
                                     <>
-                                        <div className="w-5 h-5 border-2 border-indigo-300 border-t-indigo-700 rounded-full animate-spin" />
+                                        <Loader2 size={20} className="animate-spin text-indigo-500" />
                                         <span className="text-sm">Verifying {biometricType === 'face' ? 'Face ID' : 'Biometrics'}...</span>
                                     </>
                                 ) : (
@@ -215,10 +241,13 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, onStudentLogin, onBack 
                                     if (onStudentLogin) authenticate(onStudentLogin, 'student'); 
                                 }}
                                 disabled={isLoading}
-                                className="w-full bg-white text-slate-700 font-bold text-lg py-4 rounded-[24px] shadow-sm border border-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group hover:bg-slate-50"
+                                className="w-full bg-white text-slate-700 font-bold text-lg py-4 rounded-[24px] shadow-sm border border-slate-200 transition-all flex items-center justify-center gap-2 group hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loadingType === 'student' ? (
-                                    <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+                                    <>
+                                        <Loader2 size={20} className="animate-spin text-slate-400" />
+                                        <span className="text-sm">Opening Demo...</span>
+                                    </>
                                 ) : (
                                     <>
                                         Student Portal Demo <Backpack size={20} className="text-slate-400 group-hover:text-slate-600 transition-colors" />
